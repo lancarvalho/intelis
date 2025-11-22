@@ -1,0 +1,7 @@
+{
+  "name": "INTELIGENTES - Sistema de Filiação",
+  "description": "Sistema moderno de filiação partidária para o INTELiS.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
