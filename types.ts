@@ -47,6 +47,7 @@ export interface FormData {
   // Step 5: Documents
   docFront: File | null;
   docBack: File | null;
+  signature: string | null; // Base64 string signature
 
   // Step 6: Selfie
   selfie: string | null; // Base64 string
@@ -85,6 +86,7 @@ export const INITIAL_DATA: FormData = {
   interests: [],
   docFront: null,
   docBack: null,
+  signature: null,
   selfie: null,
 };
 

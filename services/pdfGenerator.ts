@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { FormData } from "../types";
 
@@ -92,8 +93,8 @@ export const generateAffiliationPDF = (data: FormData) => {
   doc.setFont("helvetica", "normal");
   doc.text(today, 12, row2Y + 9);
   doc.text(data.voterTitle, 52, row2Y + 9);
-  doc.text("---", 112, row2Y + 9); 
-  doc.text("---", 152, row2Y + 9);
+  doc.text(data.electoralCity, 112, row2Y + 9); 
+  doc.text(data.electoralState, 152, row2Y + 9);
 
   // --- Declaração e Assinatura ---
   const declY = row2Y + rowHeight;
@@ -109,6 +110,17 @@ export const generateAffiliationPDF = (data: FormData) => {
   doc.text("DECLARO ADERIR AO PROGRAMA E ESTATUTO DESTE PARTIDO E", 85, declY + 8, { align: "center" });
   doc.text("NÃO SER FILIADO(A) A NENHUMA OUTRA AGREMIAÇÃO.", 85, declY + 13, { align: "center" });
 
+  // INSERT SIGNATURE HERE
+  if (data.signature) {
+    // Add image: image data, format, x, y, width, height
+    // Adjust position to fit above the line
+    try {
+        doc.addImage(data.signature, 'PNG', 35, declY + 15, 100, 15);
+    } catch (e) {
+        console.error("Error adding signature to PDF", e);
+    }
+  }
+
   // Linha assinatura
   doc.line(20, declY + 32, 150, declY + 32);
   doc.setFontSize(7);
@@ -123,7 +135,7 @@ export const generateAffiliationPDF = (data: FormData) => {
   // --- Declaração do Recrutador/Validador ---
   const recY = declY + declHeight + 10;
   doc.setFontSize(9);
-  doc.text("Eu, ______________________________________________________ , Título de Eleitor ________________", 10, recY);
+  doc.text(`Eu, ______________________________________________________ , Título de Eleitor ________________`, 10, recY);
   doc.text("DECLARO, SOB AS PENAS DA LEI, QUE ATESTEI A IDENTIDADE E VONTADE DESTE(A) FILIADO(A).", 105, recY + 8, { align: "center" });
 
   // --- Instruções ---

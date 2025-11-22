@@ -196,6 +196,7 @@ function App() {
     if (step === Steps.DOCUMENTS && !isUpdating) {
         if (!formData.docFront) isValid = false;
         if (!formData.docBack) isValid = false;
+        if (!formData.signature) isValid = false;
     }
     
     if (step === Steps.SELFIE && !isUpdating) {
@@ -227,8 +228,12 @@ function App() {
           }
       }
     } else {
-        if (currentStep === Steps.DOCUMENTS && (!formData.docFront || !formData.docBack) && !isUpdating) {
-            alert("Por favor, anexe as fotos do documento.");
+        if (currentStep === Steps.DOCUMENTS && !isUpdating) {
+            if (!formData.docFront || !formData.docBack) {
+                alert("Por favor, anexe as fotos do documento.");
+            } else if (!formData.signature) {
+                alert("Por favor, assine no campo indicado.");
+            }
         }
         if (currentStep === Steps.SELFIE && !formData.selfie && !isUpdating) {
             alert("Por favor, tire uma selfie para continuar.");
