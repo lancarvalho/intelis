@@ -35,6 +35,39 @@ export const fetchCities = async (uf: string) => {
   }
 };
 
+// Listas estáticas baseadas na análise do sistema de referência
+export const getSchoolingLevels = () => [
+  { id: 'analis', label: 'Analfabeto' },
+  { id: 'fund_inc', label: 'Ensino Fundamental Incompleto' },
+  { id: 'fund_comp', label: 'Ensino Fundamental Completo' },
+  { id: 'med_inc', label: 'Ensino Médio Incompleto' },
+  { id: 'med_comp', label: 'Ensino Médio Completo' },
+  { id: 'sup_inc', label: 'Ensino Superior Incompleto' },
+  { id: 'sup_comp', label: 'Ensino Superior Completo' },
+  { id: 'pos', label: 'Pós-graduação / Mestrado / Doutorado' }
+];
+
+export const getReligions = () => [
+  { id: 'catolica', label: 'Católica' },
+  { id: 'evangelica', label: 'Evangélica' },
+  { id: 'espirita', label: 'Espírita' },
+  { id: 'matriz_africana', label: 'Matriz Africana' },
+  { id: 'judaismo', label: 'Judaísmo' },
+  { id: 'islamismo', label: 'Islamismo' },
+  { id: 'budismo', label: 'Budismo' },
+  { id: 'outra', label: 'Outra' },
+  { id: 'sem_religiao', label: 'Sem Religião' }
+];
+
+export const getCommonProfessions = () => [
+  "Administrador(a)", "Advogado(a)", "Agricultor(a)", "Arquiteto(a)", "Artista", 
+  "Assistente Social", "Atleta", "Autônomo(a)", "Bancário(a)", "Comerciante", 
+  "Contador(a)", "Dentista", "Do Lar", "Economista", "Enfermeiro(a)", 
+  "Engenheiro(a)", "Estudante", "Empresário(a)", "Farmacêutico(a)", 
+  "Funcionário(a) Público(a)", "Jornalista", "Médico(a)", "Motorista", 
+  "Policial", "Professor(a)", "Psicólogo(a)", "Vendedor(a)", "Veterinário(a)", "Outros"
+];
+
 // Mock backend for "Update" flow
 export const fetchUserDataByCPF = async (cpf: string): Promise<FormData | null> => {
   return new Promise((resolve) => {
@@ -58,7 +91,9 @@ export const fetchUserDataByCPF = async (cpf: string): Promise<FormData | null> 
           number: '100',
           // Pre-filling rest with dummy data
           motherName: 'Maria da Silva',
-          profession: 'Cientista de Dados',
+          profession: 'Administrador(a)',
+          educationLevel: 'sup_comp',
+          religion: 'catolica',
           electoralState: 'DF',
           electoralCity: 'Brasília',
           voterTitle: '123456789012'

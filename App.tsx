@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Stepper } from './components/Stepper';
 import { Step1_Personal } from './components/steps/Step1_Personal';
 import { Step2_Address } from './components/steps/Step2_Address';
@@ -11,9 +11,13 @@ import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
 import { HelpModal } from './components/ui/HelpModal';
 import { FormData, INITIAL_DATA, Steps, ValidationErrors } from './types';
-import { validateCPF, validateEmail, formatCPF } from './utils/validators';
+import { validateCPF, validateEmail, formatCPF, validateFullName, validateAge } from './utils/validators';
 import { fetchUserDataByCPF, simulateBiometricAuth, submitUpdateForReview } from './services/api';
-import { HelpCircle, ChevronLeft, ArrowRight, CheckCircle, Fingerprint, ScanFace } from 'lucide-react';
+import { HelpCircle, ChevronLeft, ArrowRight, CheckCircle, Fingerprint, ScanFace, Download } from 'lucide-react';
+
+// Image Assets
+const ICON_URL = 'https://renatorgomes.com/backup/intelis/icone.png';
+const LOGO_URL = 'https://renatorgomes.com/backup/intelis/inteligentes.png';
 
 function App() {
   const [view, setView] = useState<'HOME' | 'UPDATE_AUTH' | 'MEMBER_PANEL' | 'FORM' | 'SUCCESS'>('HOME');
@@ -27,6 +31,30 @@ function App() {
   const [authCpf, setAuthCpf] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBtn(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBtn(false);
+    }
+    setDeferredPrompt(null);
+  };
 
   const updateData = (data: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...data }));
@@ -117,11 +145,16 @@ function App() {
     if (step === Steps.PERSONAL) {
       if (!formData.fullName) {
         newErrors.fullName = 'Nome é obrigatório';
-      } else if (formData.fullName.trim().split(/\s+/).length < 2) {
-        newErrors.fullName = 'O nome completo deve conter pelo menos dois nomes separados por espaço.';
+      } else if (!validateFullName(formData.fullName)) {
+        newErrors.fullName = 'O nome deve ser completo, sem números ou caracteres especiais.';
       }
       
-      if (!formData.birthDate) newErrors.birthDate = 'Data de nascimento obrigatória';
+      if (!formData.birthDate) {
+        newErrors.birthDate = 'Data de nascimento obrigatória';
+      } else if (!validateAge(formData.birthDate)) {
+        newErrors.birthDate = 'Idade deve ser entre 16 e 100 anos.';
+      }
+
       if (!validateCPF(formData.cpf)) newErrors.cpf = 'CPF inválido';
       if (!formData.phone) newErrors.phone = 'Telefone obrigatório';
       if (!validateEmail(formData.email)) newErrors.email = 'E-mail inválido';
@@ -142,7 +175,12 @@ function App() {
        if (!formData.voterTitle) newErrors.voterTitle = "Título de eleitor obrigatório";
        if (!formData.electoralState) newErrors.electoralState = "Estado eleitoral obrigatório";
        if (!formData.electoralCity) newErrors.electoralCity = "Município eleitoral obrigatório";
-       if (!formData.motherName) newErrors.motherName = "Nome da mãe obrigatório";
+       
+       if (!formData.motherName) {
+         newErrors.motherName = "Nome da mãe obrigatório";
+       } else if (!validateFullName(formData.motherName)) {
+         newErrors.motherName = "Nome da mãe deve ser completo, sem números ou caracteres especiais.";
+       }
 
        if (formData.isCandidate) {
            if (!formData.politicalName) newErrors.politicalName = "Nome político obrigatório";
@@ -213,22 +251,31 @@ function App() {
       <div className="min-h-screen flex flex-col md:flex-row bg-white font-sans">
         <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
         
+        {/* PWA Install Button (Mobile/Desktop) */}
+        {showInstallBtn && (
+            <div className="fixed top-4 right-4 z-50 animate-bounce">
+                <button 
+                    onClick={handleInstallClick}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 font-medium text-sm"
+                >
+                    <Download size={16} />
+                    Instalar App
+                </button>
+            </div>
+        )}
+
         {/* Left Hero */}
-        <div className="w-full md:w-1/2 bg-intelis-blue p-12 flex flex-col justify-between text-white relative overflow-hidden">
-          <div className="z-10">
-             <div className="flex items-center gap-3 mb-8">
-                <img src="https://picsum.photos/50/50?random=1" alt="Icon" className="w-12 h-12 rounded bg-white p-1"/> 
-                <div>
-                    <h1 className="text-2xl font-bold tracking-wider">INTEL<span className="font-light">IGENTES</span></h1>
-                    <p className="text-xs tracking-[0.3em] text-green-400">PARTIDO INTELIGENTES</p>
-                </div>
+        <div className="w-full md:w-1/2 bg-intelis-blue p-8 md:p-12 flex flex-col justify-between text-white relative overflow-hidden min-h-[50vh] md:min-h-screen">
+          <div className="z-10 mt-8 md:mt-0">
+             <div className="mb-8">
+                <img src={LOGO_URL} alt="INTELIGENTES" className="h-16 md:h-20 object-contain" />
              </div>
-             <h2 className="text-5xl font-bold leading-tight mb-6">
+             <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
                Faça parte da <br/>
                nossa luta, <br/>
                <span className="text-green-400">Filie-se!</span>
              </h2>
-             <p className="text-blue-100 text-lg max-w-md">
+             <p className="text-blue-100 text-base md:text-lg max-w-md">
                Junte-se a nós para construir um futuro mais inteligente, conectado e justo para todos.
              </p>
           </div>
@@ -242,11 +289,11 @@ function App() {
         </div>
 
         {/* Right Actions */}
-        <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-8 bg-gray-50">
+        <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-6 md:p-8 bg-gray-50 min-h-[50vh] md:min-h-screen">
            <div className="w-full max-w-md space-y-6">
               <Button 
                 onClick={handleStartFilizacao} 
-                className="w-full h-16 text-xl shadow-lg"
+                className="w-full h-14 md:h-16 text-lg md:text-xl shadow-lg"
               >
                 FILIAR
               </Button>
@@ -254,15 +301,15 @@ function App() {
               <Button 
                 onClick={handleStartUpdate} 
                 variant="outline" 
-                className="w-full h-16 text-xl bg-white"
+                className="w-full h-14 md:h-16 text-lg md:text-xl bg-white"
               >
                 ATUALIZAR CADASTRO
               </Button>
 
-              <div className="mt-12 p-6 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="mt-8 md:mt-12 p-6 bg-blue-50 rounded-xl border border-blue-100">
                   <div className="flex items-start gap-4">
-                      <div className="bg-white p-2 rounded-full shadow-sm">
-                         <img src="https://picsum.photos/40/40?random=2" alt="Idea" className="w-6 h-6" />
+                      <div className="bg-white p-2 rounded-full shadow-sm shrink-0">
+                         <img src={ICON_URL} alt="Idea" className="w-6 h-6 object-contain" />
                       </div>
                       <div>
                           <h3 className="font-bold text-intelis-darkBlue mb-1">Por que se filiar?</h3>
@@ -298,6 +345,7 @@ function App() {
                         onChange={(e) => setAuthCpf(formatCPF(e.target.value))} 
                         placeholder="000.000.000-00"
                         required
+                        inputMode="numeric"
                     />
 
                     <div className="space-y-3">
@@ -342,13 +390,13 @@ function App() {
 
   if (view === 'MEMBER_PANEL') {
       return (
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-gray-50 pb-safe">
                <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
                {/* Header Simple */}
-               <div className="bg-white shadow-sm border-b sticky top-0 z-40">
+               <div className="bg-white shadow-sm border-b sticky top-0 z-40 safe-top">
                   <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
                       <div className="flex items-center gap-2 text-intelis-blue font-bold text-xl">
-                         <div className="w-8 h-8 bg-intelis-blue text-white rounded flex items-center justify-center text-sm">I</div>
+                         <img src={ICON_URL} alt="Logo" className="w-8 h-8 object-contain" />
                          INTELiS
                       </div>
                       <button onClick={() => setView('HOME')} className="text-sm text-gray-500 hover:text-red-500">
@@ -372,14 +420,14 @@ function App() {
   if (view === 'SUCCESS') {
       return (
           <div className="min-h-screen flex items-center justify-center bg-intelis-blue p-4">
-              <div className="bg-white rounded-2xl shadow-2xl p-12 text-center max-w-lg animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12 text-center max-w-lg animate-fade-in w-full">
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                       <CheckCircle size={40} className="text-green-500" />
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
                       {isUpdating ? 'Sucesso!' : 'Filiação Recebida!'}
                   </h2>
-                  <p className="text-gray-600 mb-8 text-lg">
+                  <p className="text-gray-600 mb-8 text-base md:text-lg">
                       {successMessage || "Seus dados foram processados com sucesso."}
                   </p>
                   <Button onClick={() => setView('HOME')} className="w-full">
@@ -396,14 +444,14 @@ function App() {
     <div className="min-h-screen flex flex-col md:flex-row bg-white font-sans">
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       
-      {/* Left Sidebar (Persistent) */}
-      <div className="hidden md:flex w-1/3 bg-intelis-blue p-12 flex-col justify-between text-white relative">
+      {/* Left Sidebar (Persistent on Desktop) */}
+      <div className="hidden md:flex w-1/3 bg-intelis-blue p-12 flex-col justify-between text-white relative fixed h-screen">
         <div>
             <div className="flex items-center gap-3 mb-12">
-                 <div className="w-10 h-10 bg-white rounded flex items-center justify-center text-intelis-blue font-bold text-xl">I</div>
+                 <img src={ICON_URL} alt="Icone" className="w-10 h-10 bg-white rounded p-1 object-contain" />
                  <span className="font-bold text-xl tracking-widest">INTELiS</span>
             </div>
-            <h2 className="text-4xl font-bold leading-snug mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold leading-snug mb-4">
               {isUpdating ? 'Editando Cadastro' : 'Faça parte da nossa luta, Filie-se!'}
             </h2>
             <p className="text-blue-100">
@@ -434,17 +482,20 @@ function App() {
       {/* Right Content */}
       <div className="w-full md:w-2/3 flex flex-col h-screen overflow-y-auto bg-gray-50">
         {/* Mobile Header */}
-        <div className="md:hidden bg-intelis-blue text-white p-4 flex justify-between items-center">
-            <span className="font-bold">INTELiS</span>
+        <div className="md:hidden bg-intelis-blue text-white p-4 flex justify-between items-center sticky top-0 z-30 shadow-md safe-top">
+            <div className="flex items-center gap-2">
+               <img src={ICON_URL} alt="Icone" className="w-6 h-6 bg-white rounded p-0.5 object-contain" />
+               <span className="font-bold">INTELiS</span>
+            </div>
             <button 
                 onClick={() => setIsHelpOpen(true)}
-                className="text-sm bg-green-500 px-3 py-1 rounded hover:bg-green-600"
+                className="text-sm bg-green-500 px-3 py-1 rounded hover:bg-green-600 font-medium"
             >
                 Ajuda
             </button>
         </div>
 
-        <div className="flex-1 p-4 md:p-12 max-w-3xl mx-auto w-full">
+        <div className="flex-1 p-4 md:p-12 max-w-3xl mx-auto w-full pb-24 md:pb-12">
             
             {/* Only show Stepper in Creation Mode to avoid confusion in Edit Mode */}
             {!isUpdating && <Stepper currentStep={currentStep} />}
@@ -494,7 +545,7 @@ function App() {
                     {isUpdating ? 'Cancelar e Voltar' : (currentStep === Steps.PERSONAL ? 'Voltar ao início' : 'Voltar')}
                 </button>
 
-                <Button onClick={handleNext} className="px-8">
+                <Button onClick={handleNext} className="px-6 md:px-8">
                     {isUpdating ? 'Salvar Alterações' : (currentStep === Steps.SELFIE ? 'Finalizar' : 'Avançar')}
                     {!isUpdating && currentStep !== Steps.SELFIE && <ArrowRight size={20} className="ml-2" />}
                     {isUpdating && <CheckCircle size={20} className="ml-2" />}

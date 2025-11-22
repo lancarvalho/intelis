@@ -14,7 +14,7 @@ export const Input: React.FC<InputProps> = ({ label, error, className, disabled,
       </label>
       <div className="relative">
         <input
-          className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
+          className={`w-full px-4 py-3 md:py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors text-base md:text-sm ${
             error 
               ? 'border-red-500 focus:ring-red-200' 
               : disabled
@@ -22,6 +22,7 @@ export const Input: React.FC<InputProps> = ({ label, error, className, disabled,
                 : 'border-gray-300 focus:ring-intelis-blue focus:border-intelis-blue'
           } ${className}`}
           disabled={disabled}
+          style={{ fontSize: '16px' }} /* Force 16px on mobile to prevent iOS zoom */
           {...props}
         />
         {disabled && (

@@ -40,6 +40,26 @@ export const validateEmail = (email: string): boolean => {
   return re.test(email);
 };
 
+export const validateFullName = (name: string): boolean => {
+  // Regex extracted from analysis: Allows letters, accents and spaces. No numbers or special chars.
+  // Must have at least 2 names (checked in logic, regex checks content).
+  const re = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+  return re.test(name) && name.trim().split(/\s+/).length >= 2;
+};
+
+export const validateAge = (birthDate: string): boolean => {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return age >= 16 && age <= 100;
+};
+
 export const formatPhone = (value: string) => {
   return value
     .replace(/\D/g, '')
