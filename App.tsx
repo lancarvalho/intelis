@@ -143,6 +143,11 @@ function App() {
        if (!formData.electoralState) newErrors.electoralState = "Estado eleitoral obrigatório";
        if (!formData.electoralCity) newErrors.electoralCity = "Município eleitoral obrigatório";
        if (!formData.motherName) newErrors.motherName = "Nome da mãe obrigatório";
+
+       if (formData.isCandidate) {
+           if (!formData.politicalName) newErrors.politicalName = "Nome político obrigatório";
+           if (!formData.politicalOffice) newErrors.politicalOffice = "Cargo obrigatório";
+       }
     }
 
     // For update flow, we might relax document requirements if they are already present,

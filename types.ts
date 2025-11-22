@@ -24,7 +24,13 @@ export interface FormData {
   gender: string;
   motherName: string;
   fatherName: string;
+  
+  // Candidatura fields
   isCandidate: boolean;
+  politicalName: string;
+  politicalOffice: string;
+  electionYear: string;
+
   isVolunteer: boolean;
   isFiscal: boolean;
 
@@ -64,6 +70,9 @@ export const INITIAL_DATA: FormData = {
   motherName: '',
   fatherName: '',
   isCandidate: false,
+  politicalName: '',
+  politicalOffice: '',
+  electionYear: '',
   isVolunteer: false,
   isFiscal: false,
   profession: '',
