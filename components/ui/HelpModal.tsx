@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, MessageCircle, Mail, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, MessageCircle, Mail, HelpCircle, ChevronDown, ChevronUp, Bot } from 'lucide-react';
+import { SupportChat } from './SupportChat';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -29,8 +30,12 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
       answer: "Você pode consultar o número do seu Título de Eleitor no site do TSE ou no aplicativo e-Título."
     },
     {
-      question: "Estou com problemas na câmera/selfie",
-      answer: "Verifique se você deu permissão ao navegador para acessar sua câmera. Tente limpar o cache ou usar outro navegador se o problema persistir."
+      question: "Estou com problemas técnicos, e agora?",
+      answer: (
+        <span>
+          Caso o assistente virtual não resolva, você pode enviar um e-mail detalhado com prints do erro para <a href="mailto:suporte@intelis.org.br" className="text-intelis-blue font-bold underline">suporte@intelis.org.br</a>.
+        </span>
+      )
     }
   ];
 
@@ -44,7 +49,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
             <div className="p-2 bg-blue-50 rounded-lg">
                <HelpCircle size={24} className="text-intelis-blue" />
             </div>
-            <h2 className="text-xl font-bold">Precisa de Ajuda?</h2>
+            <div>
+                <h2 className="text-xl font-bold">Central de Ajuda</h2>
+                <p className="text-xs text-gray-500">Tire suas dúvidas em tempo real</p>
+            </div>
           </div>
           <button 
             onClick={onClose}
@@ -57,25 +65,30 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
         {/* Content */}
         <div className="overflow-y-auto p-6 space-y-8">
           
+          {/* AI Agent Section */}
+          <section>
+            <div className="flex items-center gap-2 mb-3">
+                <Bot className="text-green-500" size={20}/>
+                <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Assistente Virtual INTELiS</h3>
+            </div>
+            <SupportChat />
+          </section>
+
           {/* Direct Contact Channels */}
           <section>
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Canais de Atendimento</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Outros Canais</h3>
+            <div className="grid grid-cols-1 gap-4">
               <a 
                 href="#" 
-                className="flex flex-col items-center justify-center p-4 border rounded-xl hover:border-green-500 hover:bg-green-50 transition-all group"
+                className="flex items-center gap-4 p-4 border rounded-xl hover:border-green-500 hover:bg-green-50 transition-all group"
               >
-                <MessageCircle size={32} className="text-green-500 mb-2 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold text-gray-800">WhatsApp</span>
-                <span className="text-xs text-gray-500">Resposta rápida</span>
-              </a>
-              <a 
-                href="mailto:suporte@intelis.org.br" 
-                className="flex flex-col items-center justify-center p-4 border rounded-xl hover:border-intelis-blue hover:bg-blue-50 transition-all group"
-              >
-                <Mail size={32} className="text-intelis-blue mb-2 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold text-gray-800">E-mail</span>
-                <span className="text-xs text-gray-500">suporte@intelis.org.br</span>
+                <div className="p-3 bg-green-100 rounded-full text-green-600 group-hover:scale-110 transition-transform">
+                    <MessageCircle size={24} />
+                </div>
+                <div>
+                    <span className="font-semibold text-gray-800 block">WhatsApp Oficial</span>
+                    <span className="text-xs text-gray-500">Falar com atendente humano (09h às 18h)</span>
+                </div>
               </a>
             </div>
           </section>
@@ -104,14 +117,6 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           </section>
 
         </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl text-center">
-           <p className="text-xs text-gray-500">
-             Nosso horário de atendimento é de Segunda a Sexta, das 09h às 18h.
-           </p>
-        </div>
-
       </div>
     </div>
   );

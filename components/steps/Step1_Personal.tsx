@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FormData, ValidationErrors } from '../../types';
 import { Input } from '../ui/Input';
 import { formatCPF, formatPhone } from '../../utils/validators';
 import { generateStatutePDF } from '../../services/pdfGenerator';
+import { TermsModal } from '../ui/TermsModal';
 import { Download } from 'lucide-react';
 
 interface Step1Props {
@@ -13,8 +14,21 @@ interface Step1Props {
 }
 
 export const Step1_Personal: React.FC<Step1Props> = ({ data, updateData, errors, isUpdating = false }) => {
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
+
+  const handleAcceptTerms = () => {
+    updateData({ termsAccepted: true });
+    setIsTermsOpen(false);
+  };
+
   return (
     <div className="space-y-4 animate-fade-in">
+      <TermsModal 
+        isOpen={isTermsOpen} 
+        onClose={() => setIsTermsOpen(false)} 
+        onAccept={handleAcceptTerms}
+      />
+
       <h2 className="text-2xl font-bold text-intelis-darkBlue mb-4">Dados Pessoais</h2>
       <p className="text-gray-600 text-sm mb-6">
         {isUpdating 
@@ -85,7 +99,7 @@ export const Step1_Personal: React.FC<Step1Props> = ({ data, updateData, errors,
               className="w-5 h-5 text-intelis-blue rounded border-gray-300 focus:ring-intelis-blue"
             />
             <span className="text-sm text-gray-700">
-              Eu concordo com os <a href="#" className="text-intelis-blue font-semibold hover:underline">TERMOS DE USO</a>
+              Eu concordo com os <button type="button" onClick={() => setIsTermsOpen(true)} className="text-intelis-blue font-semibold hover:underline">TERMOS DE USO</button>
             </span>
           </label>
           {errors.termsAccepted && <p className="text-red-500 text-xs ml-8">{errors.termsAccepted}</p>}
