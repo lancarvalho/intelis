@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Stepper } from './components/Stepper';
 import { Step1_Personal } from './components/steps/Step1_Personal';
@@ -7,6 +8,7 @@ import { Step4_Interests } from './components/steps/Step4_Interests';
 import { Step5_Documents } from './components/steps/Step5_Documents';
 import { Step6_Selfie } from './components/steps/Step6_Selfie';
 import { MemberPanel } from './components/MemberPanel';
+import { AdminPanel } from './components/admin/AdminPanel';
 import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
 import { HelpModal } from './components/ui/HelpModal';
@@ -14,14 +16,14 @@ import { FormData, INITIAL_DATA, Steps, ValidationErrors } from './types';
 import { validateCPF, validateEmail, formatCPF, validateFullName, validateAge } from './utils/validators';
 import { fetchUserDataByCPF, simulateBiometricAuth, submitUpdateForReview, sendWelcomeEmail } from './services/api';
 import { generateAffiliationPDF } from './services/pdfGenerator';
-import { HelpCircle, ChevronLeft, ArrowRight, CheckCircle, Fingerprint, ScanFace, Download, FileText } from 'lucide-react';
+import { HelpCircle, ChevronLeft, ArrowRight, CheckCircle, Fingerprint, ScanFace, Download, FileText, Shield } from 'lucide-react';
 
 // Image Assets
 const ICON_URL = 'https://renatorgomes.com/backup/intelis/icone.png';
 const LOGO_URL = 'https://renatorgomes.com/backup/intelis/inteligentes.png';
 
 function App() {
-  const [view, setView] = useState<'HOME' | 'UPDATE_AUTH' | 'MEMBER_PANEL' | 'FORM' | 'SUCCESS'>('HOME');
+  const [view, setView] = useState<'HOME' | 'UPDATE_AUTH' | 'MEMBER_PANEL' | 'FORM' | 'SUCCESS' | 'ADMIN'>('HOME');
   const [currentStep, setCurrentStep] = useState(Steps.PERSONAL);
   const [formData, setFormData] = useState<FormData>(INITIAL_DATA);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -91,7 +93,7 @@ function App() {
       setIsUpdating(true);
       setView('MEMBER_PANEL');
     } else {
-      alert('CPF não encontrado na base de dados.');
+      alert('CPF não encontrado na base de dados. (Use 123.456.789-00 para teste)');
     }
   };
 
@@ -249,6 +251,10 @@ function App() {
 
   // --- Views ---
 
+  if (view === 'ADMIN') {
+      return <AdminPanel />;
+  }
+
   if (view === 'HOME') {
     return (
       <div className="min-h-screen flex flex-col md:flex-row bg-white font-sans">
@@ -288,6 +294,13 @@ function App() {
               <svg viewBox="0 0 100 100" className="w-full h-full">
                   <circle cx="100" cy="100" r="50" fill="white" />
               </svg>
+          </div>
+          
+          {/* Secret Admin Link in Footer */}
+          <div className="z-10 text-xs text-blue-300 mt-auto">
+              <button onClick={() => setView('ADMIN')} className="hover:text-white transition-colors flex items-center gap-1">
+                  <Shield size={10} /> Área Administrativa
+              </button>
           </div>
         </div>
 

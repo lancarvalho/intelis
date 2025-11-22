@@ -1,4 +1,8 @@
+
 export interface FormData {
+  id?: string;
+  status?: 'pending' | 'approved' | 'rejected';
+
   // Step 1: Personal
   fullName: string;
   birthDate: string;

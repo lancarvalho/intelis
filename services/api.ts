@@ -1,3 +1,4 @@
+
 import { FormData, INITIAL_DATA } from '../types';
 
 export const fetchAddressByCEP = async (cep: string) => {
@@ -72,10 +73,14 @@ export const getCommonProfessions = () => [
 export const fetchUserDataByCPF = async (cpf: string): Promise<FormData | null> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // Simulate finding a user for a specific CPF
-      if (cpf.replace(/\D/g, '') === '12345678900') {
+      // Simulate finding a user for a specific CPF (both cleaned and formatted)
+      const cleanedCpf = cpf.replace(/\D/g, '');
+      
+      if (cleanedCpf === '12345678900') {
         resolve({
           ...INITIAL_DATA,
+          id: 'usr_123',
+          status: 'approved',
           cpf: '123.456.789-00',
           fullName: 'João da Silva Intelis',
           email: 'joao@intelis.org.br',
@@ -132,6 +137,58 @@ export const sendWelcomeEmail = async (data: FormData) => {
   console.log(`Assunto: Bem-vindo ao INTELIGENTES - Sua Ficha de Filiação`);
   console.log(`Corpo: Olá ${data.fullName}, obrigado por se filiar! Em anexo está sua ficha de filiação.`);
   console.log("--- FIM DA SIMULAÇÃO ---");
-  // Em produção, aqui chamaria um endpoint do backend que usaria nodemailer, sendgrid, etc.
-  // e geraria o PDF no servidor ou enviaria o PDF gerado no client como blob.
+};
+
+// Mock Admin API
+export const getPendingAffiliations = async (): Promise<FormData[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        {
+          ...INITIAL_DATA,
+          id: 'pend_1',
+          status: 'pending',
+          fullName: 'Ana Souza',
+          cpf: '987.654.321-00',
+          email: 'ana.souza@email.com',
+          phone: '(11) 98888-7777',
+          birthDate: '1995-05-12',
+          city: 'São Paulo',
+          addressState: 'SP',
+          motherName: 'Clara Souza',
+          voterTitle: '123412341234',
+          selfie: 'https://randomuser.me/api/portraits/women/44.jpg', // Mock Image
+          // Mock Docs (usually these are URLs from bucket)
+          docFront: new File([""], "frente.jpg"), 
+          docBack: new File([""], "verso.jpg")
+        },
+        {
+          ...INITIAL_DATA,
+          id: 'pend_2',
+          status: 'pending',
+          fullName: 'Carlos Pereira',
+          cpf: '456.789.123-00',
+          email: 'carlos.p@email.com',
+          phone: '(21) 97777-6666',
+          birthDate: '1988-11-23',
+          city: 'Rio de Janeiro',
+          addressState: 'RJ',
+          motherName: 'Joana Pereira',
+          voterTitle: '432143214321',
+          selfie: 'https://randomuser.me/api/portraits/men/32.jpg',
+          docFront: new File([""], "frente.jpg"), 
+          docBack: new File([""], "verso.jpg")
+        }
+      ]);
+    }, 1000);
+  });
+};
+
+export const reviewAffiliation = async (id: string, status: 'approved' | 'rejected', reason?: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log(`Affiliation ${id} ${status}. Reason: ${reason}`);
+            resolve(true);
+        }, 1000);
+    });
 };

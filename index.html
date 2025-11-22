@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
@@ -54,13 +55,21 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-              console.log('SW registered: ', registration);
-            })
-            .catch(registrationError => {
-              console.log('SW registration failed: ', registrationError);
-            });
+          // Try/catch to prevent iframe origin errors from cluttering the console in preview
+          try {
+            navigator.serviceWorker.register('/sw.js')
+              .then(registration => {
+                console.log('SW registered: ', registration);
+              })
+              .catch(registrationError => {
+                // Ignore harmless origin errors in development/preview
+                if (!registrationError.message.includes('origin')) {
+                   console.log('SW registration failed: ', registrationError);
+                }
+              });
+          } catch (e) {
+            console.log('SW registration skipped (preview environment)');
+          }
         });
       }
     </script>
