@@ -12,8 +12,9 @@ import { Input } from './components/ui/Input';
 import { HelpModal } from './components/ui/HelpModal';
 import { FormData, INITIAL_DATA, Steps, ValidationErrors } from './types';
 import { validateCPF, validateEmail, formatCPF, validateFullName, validateAge } from './utils/validators';
-import { fetchUserDataByCPF, simulateBiometricAuth, submitUpdateForReview } from './services/api';
-import { HelpCircle, ChevronLeft, ArrowRight, CheckCircle, Fingerprint, ScanFace, Download } from 'lucide-react';
+import { fetchUserDataByCPF, simulateBiometricAuth, submitUpdateForReview, sendWelcomeEmail } from './services/api';
+import { generateAffiliationPDF } from './services/pdfGenerator';
+import { HelpCircle, ChevronLeft, ArrowRight, CheckCircle, Fingerprint, ScanFace, Download, FileText } from 'lucide-react';
 
 // Image Assets
 const ICON_URL = 'https://renatorgomes.com/backup/intelis/icone.png';
@@ -207,7 +208,7 @@ function App() {
     return isValid;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (validateStep(currentStep)) {
       if (isUpdating) {
           // In update mode, "Next/Save" goes back to panel
@@ -219,6 +220,8 @@ function App() {
             window.scrollTo(0, 0);
           } else {
             setView('SUCCESS');
+            // Simulate sending welcome email with attachment logic handled on backend
+            await sendWelcomeEmail(formData); 
           }
       }
     } else {
@@ -428,8 +431,20 @@ function App() {
                       {isUpdating ? 'Sucesso!' : 'Filiação Recebida!'}
                   </h2>
                   <p className="text-gray-600 mb-8 text-base md:text-lg">
-                      {successMessage || "Seus dados foram processados com sucesso."}
+                      {successMessage || "Seus dados foram processados com sucesso. Enviamos a ficha de filiação para o seu e-mail."}
                   </p>
+                  
+                  {!isUpdating && (
+                    <Button 
+                        onClick={() => generateAffiliationPDF(formData)} 
+                        variant="secondary" 
+                        className="w-full mb-4 flex items-center justify-center"
+                    >
+                        <FileText className="mr-2" size={20} />
+                        Baixar Ficha de Filiação
+                    </Button>
+                  )}
+
                   <Button onClick={() => setView('HOME')} className="w-full">
                       Voltar ao Início
                   </Button>

@@ -2,6 +2,8 @@ import React from 'react';
 import { FormData, ValidationErrors } from '../../types';
 import { Input } from '../ui/Input';
 import { formatCPF, formatPhone } from '../../utils/validators';
+import { generateStatutePDF } from '../../services/pdfGenerator';
+import { Download } from 'lucide-react';
 
 interface Step1Props {
   data: FormData;
@@ -74,7 +76,7 @@ export const Step1_Personal: React.FC<Step1Props> = ({ data, updateData, errors,
       />
 
       {!isUpdating && (
-        <div className="mt-6 space-y-3">
+        <div className="mt-6 space-y-4">
           <label className="flex items-center space-x-3 cursor-pointer">
             <input
               type="checkbox"
@@ -88,18 +90,29 @@ export const Step1_Personal: React.FC<Step1Props> = ({ data, updateData, errors,
           </label>
           {errors.termsAccepted && <p className="text-red-500 text-xs ml-8">{errors.termsAccepted}</p>}
 
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={data.statuteAccepted}
-              onChange={(e) => updateData({ statuteAccepted: e.target.checked })}
-              className="w-5 h-5 text-intelis-blue rounded border-gray-300 focus:ring-intelis-blue"
-            />
-            <span className="text-sm text-gray-700">
-              Eu concordo com o <a href="#" className="text-intelis-blue font-semibold hover:underline">ESTATUTO DO PARTIDO</a>
-            </span>
-          </label>
-          {errors.statuteAccepted && <p className="text-red-500 text-xs ml-8">{errors.statuteAccepted}</p>}
+          <div className="flex flex-col space-y-2">
+             <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={data.statuteAccepted}
+                  onChange={(e) => updateData({ statuteAccepted: e.target.checked })}
+                  className="w-5 h-5 text-intelis-blue rounded border-gray-300 focus:ring-intelis-blue"
+                />
+                <span className="text-sm text-gray-700">
+                  Eu concordo com o <span className="text-intelis-blue font-semibold">ESTATUTO DO PARTIDO</span>
+                </span>
+              </label>
+              {errors.statuteAccepted && <p className="text-red-500 text-xs ml-8">{errors.statuteAccepted}</p>}
+              
+              <button 
+                type="button"
+                onClick={generateStatutePDF}
+                className="ml-8 flex items-center text-xs font-medium text-intelis-green hover:text-green-700 transition-colors w-fit"
+              >
+                <Download size={14} className="mr-1" />
+                CONHEÇA NOSSO ESTATUTO (BAIXAR PDF)
+              </button>
+          </div>
         </div>
       )}
     </div>

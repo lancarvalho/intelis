@@ -125,3 +125,13 @@ export const submitUpdateForReview = async (data: FormData): Promise<{ success: 
     }, 2000);
   });
 };
+
+export const sendWelcomeEmail = async (data: FormData) => {
+  console.log("--- SIMULANDO ENVIO DE E-MAIL ---");
+  console.log(`Para: ${data.email}`);
+  console.log(`Assunto: Bem-vindo ao INTELIGENTES - Sua Ficha de Filiação`);
+  console.log(`Corpo: Olá ${data.fullName}, obrigado por se filiar! Em anexo está sua ficha de filiação.`);
+  console.log("--- FIM DA SIMULAÇÃO ---");
+  // Em produção, aqui chamaria um endpoint do backend que usaria nodemailer, sendgrid, etc.
+  // e geraria o PDF no servidor ou enviaria o PDF gerado no client como blob.
+};
