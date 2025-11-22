@@ -3,17 +3,21 @@ import React, { useState, useEffect } from 'react';
 import { FormData } from '../../types';
 import { getPendingAffiliations, reviewAffiliation } from '../../services/api';
 import { Button } from '../ui/Button';
-import { CheckCircle, XCircle, User, FileText, MapPin, RefreshCw, Search } from 'lucide-react';
+import { AdminLogin } from './AdminLogin';
+import { CheckCircle, XCircle, User, FileText, MapPin, RefreshCw, Search, LogOut } from 'lucide-react';
 
-export const AdminPanel: React.FC = () => {
+export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pending, setPending] = useState<FormData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<FormData | null>(null);
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isAuthenticated) {
+        loadData();
+    }
+  }, [isAuthenticated]);
 
   const loadData = async () => {
     setLoading(true);
@@ -36,15 +40,29 @@ export const AdminPanel: React.FC = () => {
       }
   };
 
+  const handleLogout = () => {
+      setIsAuthenticated(false);
+      onExit();
+  };
+
+  if (!isAuthenticated) {
+      return <AdminLogin onLoginSuccess={() => setIsAuthenticated(true)} onBack={onExit} />;
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar List */}
       <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-bold text-intelis-darkBlue flex items-center gap-2">
-                <Search size={20}/> Auditoria de Filiações
-            </h2>
-            <p className="text-xs text-gray-500 mt-1">{pending.length} pendentes</p>
+        <div className="p-4 border-b border-gray-200 bg-intelis-darkBlue text-white flex justify-between items-center">
+            <div>
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                    <Search size={20}/> Auditoria
+                </h2>
+                <p className="text-xs text-blue-200">{pending.length} pendentes</p>
+            </div>
+            <button onClick={handleLogout} className="text-blue-200 hover:text-white" title="Sair">
+                <LogOut size={20} />
+            </button>
         </div>
         <div className="overflow-y-auto flex-1">
             {loading ? (

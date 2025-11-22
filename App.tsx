@@ -252,7 +252,7 @@ function App() {
   // --- Views ---
 
   if (view === 'ADMIN') {
-      return <AdminPanel />;
+      return <AdminPanel onExit={() => setView('HOME')} />;
   }
 
   if (view === 'HOME') {
