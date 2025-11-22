@@ -230,7 +230,7 @@ export const generateStatutePDF = () => {
   addArticle("Art. 2º O Inteligentes – Intelis constitui-se como instrumento de realização do processo político, fiel à Constituição da República do Brasil e aos princípios da soberania popular e da representação política, da separação de poderes, do estado democrático de direito, da forma federativa, da limitação do poder, da periodicidade dos mandatos, da moralidade, da transparência, da eficiência, da descentralização, da austeridade, da responsabilidade, da meritocracia e da evolução gradual e natural da sociedade para a permanente proteção da vida, da família, das liberdades individuais, da legítima defesa, da propriedade privada, da livre iniciativa, dos valores culturais e religiosos dos brasileiros, defendendo a garantia da ordem social, moral e jurídica, da segurança pública e da estabilidade política e econômica, a fim de formar cidadãos livres e conscientes e garantir-lhes voz, unindo todos aqueles que estejam sob a bandeira do amor à pátria e contrários a tentativas ideológicas tendentes desvirtuar os valores mais caros aos brasileiros, desestabilizar a sociedade e confrontar a soberania nacional.");
   addArticle("Parágrafo único. O Programa do Inteligentes e seu Código de Ética são partes integrantes do presente Estatuto e deverão ser observados em suas integralidades.");
   
-  addArticle("Art. 3º O Inteligentes será considerada extinta, para todos os efeitos legais, mediante deliberação de dois terços da Convenção Nacional.");
+  addArticle("Art. 3º O Inteligentes será considerado extinto, para todos os efeitos legais, mediante deliberação de dois terços da Convenção Nacional.");
 
   addSubtitle("DA FILIAÇÃO PARTIDÁRIA - PROCEDIMENTOS");
   addArticle("Art. 4º Poderão filiar-se ao Intelis os eleitores em pleno gozo dos seus direitos políticos que se proponham a aceitar, respeitar e difundir fielmente as diretrizes do programa fundador e os preceitos deste Estatuto.");
@@ -287,12 +287,12 @@ export const generateStatutePDF = () => {
   addArticle("Art. 14. O cancelamento da filiação somente ocorrerá por morte, perda dos direitos políticos, desfiliação voluntária ou sanção disciplinar, observado o contraditório.");
 
   addSubtitle("DOS ÓRGÃOS PARTIDÁRIOS");
-  addArticle("Art. 15. O Inteligentes é composta segundo a seguinte estrutura: I - Órgãos de deliberação especial: Convenções, Conselho Político Nacional, Diretórios. II - Órgãos de direção: Comissões Executivas, Comissões Provisórias. III - Órgãos de ação: Inteligentes Mulher, Inteligentes Jovem, Inteligentes Inclusiva. IV - Órgãos auxiliares: Conselho Fiscal, Conselho de Ética, Procuradoria Jurídica.");
+  addArticle("Art. 15. O Inteligentes é composto segundo a seguinte estrutura: I - Órgãos de deliberação especial: Convenções, Conselho Político Nacional, Diretórios. II - Órgãos de direção: Comissões Executivas, Comissões Provisórias. III - Órgãos de ação: Inteligentes Mulher, Inteligentes Jovem, Inteligentes Inclusiva. IV - Órgãos auxiliares: Conselho Fiscal, Conselho de Ética, Procuradoria Jurídica.");
 
   addSubtitle("DAS FINANÇAS E PATRIMÔNIO");
   addArticle("Art. 88. Anualmente, as Comissões Executivas remeterão à Justiça Eleitoral a prestação de contas.");
   addArticle("§ 2º O Inteligentes adotará sistema de gestão e compliance para garantir a integridade e transparência.");
-  addArticle("§ 3º É vedada a locação ou compra de bens de empresas de dirigentes e filiados.");
+  addArticle("§ 3º É vedada a locação ou compra de bens e serviços, inclusive de empresas em que participem dirigentes e filiados.");
   
   addArticle("Art. 89. Receitas: I - Fundo Partidário; II - Doações de pessoas físicas; III - Sobras de campanha; IV - Doações de outros partidos. V - Recursos próprios.");
   addArticle("Art. 94. É vedado receber recursos de origem estrangeira, entes públicos (salvo fundo partidário) ou de origem não identificada.");
@@ -305,6 +305,9 @@ export const generateStatutePDF = () => {
   addArticle("Art. 115. O presente Estatuto, o Programa e a Ata de Fundação são os documentos originais de constituição.");
   addArticle("Art. 122. O Inteligentes terá sede e foro na Capital Federal.");
   addArticle("Art. 124. O presente Estatuto entrará em vigor na data de seu registro no Registro Civil de Pessoas Jurídicas da Capital Federal.");
+
+  addSubtitle("DISPOSIÇÕES ESPECIAIS DE FUNDAÇÃO");
+  addArticle("Art. 118. Desde a fundação até a constituição do Diretório Nacional e sua Comissão Executiva Nacional, o Inteligentes será dirigido por Comissão Provisória Nacional.");
   
   y += 10;
   doc.text("Brasília-DF, 21 de novembro de 2025.", margin, y);
