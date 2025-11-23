@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { FormData, ValidationErrors } from '../../types';
 import { Input } from '../ui/Input';
@@ -35,10 +36,17 @@ const POLITICAL_OFFICES = [
   "PRESIDENTE"
 ];
 
+const MUNICIPAL_OFFICES = [
+  "PREFEITO(A)",
+  "VICE-PREFEITO(A)",
+  "VEREADOR(A)"
+];
+
 export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, errors, isUpdating = false }) => {
   const [states, setStates] = useState<IBGEUF[]>([]);
   const [cities, setCities] = useState<IBGECity[]>([]);
   const [loadingCities, setLoadingCities] = useState(false);
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
 
   useEffect(() => {
     fetchStates().then(setStates);
@@ -56,13 +64,73 @@ export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, er
     }
   }, [data.electoralState]);
 
+  // Lógica de Ciclos Eleitorais
+  const calculateElectionYears = (office: string): string[] => {
+      if (!office) return [];
+
+      const isMunicipal = MUNICIPAL_OFFICES.includes(office);
+      
+      // Definição dos anos-base iniciais
+      let baseYear = isMunicipal ? 2024 : 2026;
+      
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      
+      // Avança o ano-base para o ciclo atual ou futuro mais próximo
+      // Enquanto o ano-base for menor que o ano atual, soma 4
+      while (baseYear < currentYear) {
+          baseYear += 4;
+      }
+
+      // Agora baseYear é >= currentYear.
+      
+      // Se o ano atual é anterior ao ano da eleição (ex: estamos em 2025, eleição é 2026)
+      if (currentYear < baseYear) {
+          return [baseYear.toString()];
+      }
+
+      // Se estamos no ano da eleição (currentYear === baseYear)
+      // Verificamos a data de corte: 15 de Agosto
+      // Mês em JS é 0-11, então Agosto é 7.
+      const cutoffMonth = 7; // Agosto
+      const cutoffDay = 15;
+
+      const isAfterCutoff = 
+          today.getMonth() > cutoffMonth || 
+          (today.getMonth() === cutoffMonth && today.getDate() > cutoffDay);
+
+      if (isAfterCutoff) {
+          // A partir de 16/08, bloqueia o ano atual e libera os próximos 2
+          return [(baseYear + 4).toString(), (baseYear + 8).toString()];
+      } else {
+          // Até 15/08, o ano atual é a opção válida
+          return [baseYear.toString()];
+      }
+  };
+
+  // Atualiza os anos disponíveis quando o cargo muda
+  useEffect(() => {
+    if (data.isCandidate && data.politicalOffice) {
+        const years = calculateElectionYears(data.politicalOffice);
+        setAvailableYears(years);
+        
+        // Se houver apenas uma opção, seleciona automaticamente
+        // Se a opção atual não estiver na lista válida, reseta
+        if (years.length === 1) {
+            updateData({ electionYear: years[0] });
+        } else if (data.electionYear && !years.includes(data.electionYear)) {
+            updateData({ electionYear: '' });
+        }
+    } else if (!data.isCandidate) {
+        setAvailableYears([]);
+        updateData({ electionYear: '' });
+    }
+  }, [data.politicalOffice, data.isCandidate]);
+
+
   const handleCandidateChange = (isCandidate: boolean) => {
     if (isCandidate) {
-       const nextYear = new Date().getFullYear() + 1;
-       updateData({ 
-         isCandidate: true,
-         electionYear: nextYear.toString()
-       });
+       updateData({ isCandidate: true });
     } else {
        updateData({ 
          isCandidate: false,
@@ -222,13 +290,22 @@ export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, er
                         {errors.politicalOffice && <p className="mt-1 text-xs text-red-500">{errors.politicalOffice}</p>}
                     </div>
                     
-                    <Input
-                        label="Ano da Eleição"
-                        value={data.electionYear}
-                        disabled={true}
-                        className="bg-gray-100 text-gray-500 cursor-not-allowed"
-                        required
-                    />
+                    <div className="w-full">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Ano da Eleição <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-intelis-blue bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                            value={data.electionYear}
+                            onChange={(e) => updateData({ electionYear: e.target.value })}
+                            disabled={!data.politicalOffice}
+                        >
+                            <option value="">{data.politicalOffice ? 'Selecione o Ano' : 'Selecione o Cargo primeiro'}</option>
+                            {availableYears.map(year => (
+                                <option key={year} value={year}>{year}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
              </div>
            )}

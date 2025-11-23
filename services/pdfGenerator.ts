@@ -33,11 +33,12 @@ export const generateAffiliationPDF = async (data: FormData) => {
 
   // --- Cabeçalho ---
   if (logoImg) {
-      const logoWidth = 60; // Ajuste conforme proporção
+      // Ajuste de proporção e posição para ficar igual à referência
+      const logoWidth = 50; 
       const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
       doc.addImage(logoImg, 'PNG', 15, 15, logoWidth, logoHeight);
   } else {
-      // Fallback text if image fails
+      // Fallback text
       doc.setFont("helvetica", "bold");
       doc.setTextColor(blueColor);
       doc.setFontSize(24);
@@ -45,19 +46,20 @@ export const generateAffiliationPDF = async (data: FormData) => {
   }
 
   doc.setTextColor(0, 0, 0);
-  // Linha vertical separadora do cabeçalho
+  // Linha vertical separadora do cabeçalho (ajustada para não colidir com a logo)
   doc.setLineWidth(0.2);
-  doc.line(80, 15, 80, 35);
+  doc.line(70, 15, 70, 35);
 
-  // Textos do Cabeçalho (Direita)
+  // Textos do Cabeçalho (Direita - Alinhados conforme referência)
+  const textX = 75;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("FICHA DE FILIAÇÃO PARTIDÁRIA", 85, 18);
+  doc.setFontSize(12);
+  doc.text("FICHA DE FILIAÇÃO PARTIDÁRIA", textX, 18);
   
   doc.setFontSize(10);
-  doc.text("INTELIGENTES - INTELiS", 85, 24);
+  doc.text("INTELIGENTES - INTELiS", textX, 24);
   doc.setFont("helvetica", "normal");
-  doc.text("CNPJ: 35.779.882/0001-10", 85, 30);
+  doc.text("CNPJ: 12.345.678/0001-90", textX, 30);
 
   // Barra Azul separadora (Resolução)
   const resY = 40;
@@ -65,12 +67,12 @@ export const generateAffiliationPDF = async (data: FormData) => {
   doc.rect(10, resY, 190, 7, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
-  doc.setFont("helvetica", "bold"); // Bold para legibilidade no fundo escuro
+  doc.setFont("helvetica", "bold"); 
   doc.text("Resolução-TSE nº 23.571/2018, art. 12, §1º (Lei nº 9.096/95, art 9º, §1º)", 105, resY + 4.5, { align: "center" });
 
   // --- Dados do Filiado (Grid) ---
   const startY = 52;
-  const rowHeight = 12;
+  const rowHeight = 14; // Aumentado um pouco para respiro
 
   doc.setTextColor(0, 0, 0);
   doc.setDrawColor(0);
@@ -78,62 +80,64 @@ export const generateAffiliationPDF = async (data: FormData) => {
 
   // Linha 1: Nome
   doc.rect(10, startY, 190, rowHeight);
-  doc.setFontSize(6);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(blueColor);
-  doc.text("Nome do(a) filiado(a)", 12, startY + 3);
-  doc.setFontSize(10);
+  doc.text("Nome do(a) filiado(a)", 12, startY + 4);
+  doc.setFontSize(11);
   doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "normal");
-  doc.text(data.fullName.toUpperCase(), 12, startY + 9);
+  doc.setFont("helvetica", "bold"); // Nome em negrito
+  doc.text(data.fullName.toUpperCase(), 12, startY + 10);
 
   // Linha 2: Data, Título, Zona, Seção
   const row2Y = startY + rowHeight;
   doc.rect(10, row2Y, 190, rowHeight);
   
-  // Linhas verticais linha 2 (Ajustadas visualmente)
+  // Linhas verticais linha 2
   doc.line(50, row2Y, 50, row2Y + rowHeight); // After Data
   doc.line(100, row2Y, 100, row2Y + rowHeight); // After Titulo
   doc.line(160, row2Y, 160, row2Y + rowHeight); // After Zona
 
   // Labels Linha 2
-  doc.setFontSize(6);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(blueColor);
-  doc.text("Data de Filiação", 12, row2Y + 3);
-  doc.text("Nº do Título", 52, row2Y + 3);
-  doc.text("Zona", 102, row2Y + 3);
-  doc.text("Seção", 162, row2Y + 3);
+  doc.text("Data de Filiação", 12, row2Y + 4);
+  doc.text("Nº do Título", 52, row2Y + 4);
+  doc.text("Zona", 102, row2Y + 4);
+  doc.text("Seção", 162, row2Y + 4);
 
   // Dados Linha 2
   const today = new Date().toLocaleDateString('pt-BR');
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
-  doc.text(today, 12, row2Y + 9);
-  doc.text(data.voterTitle, 52, row2Y + 9);
-  doc.text(data.electoralCity, 102, row2Y + 9); 
-  doc.text(data.electoralState, 162, row2Y + 9);
+  doc.text(today, 12, row2Y + 10);
+  doc.text(data.voterTitle, 52, row2Y + 10);
+  doc.text(data.electoralState + " / " + data.electoralCity, 102, row2Y + 10); // Cidade/UF no campo de zona se não tiver zona específica
+  doc.text("---", 162, row2Y + 10); // Seção geralmente não é capturada no form simplificado, usar traço ou dado se tiver
 
   // --- Declaração e Assinatura ---
   const declY = row2Y + rowHeight;
-  const declHeight = 45;
+  const declHeight = 50;
   
   // Caixa Grande Assinatura
   doc.rect(10, declY, 150, declHeight); 
   // Caixa Digital
   doc.rect(160, declY, 40, declHeight);
 
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text("DECLARO ADERIR AO PROGRAMA E ESTATUTO DESTE PARTIDO E", 85, declY + 8, { align: "center" });
-  doc.text("NÃO SER FILIADO(A) A NENHUMA OUTRA AGREMIAÇÃO.", 85, declY + 13, { align: "center" });
+  doc.text("DECLARO ADERIR AO PROGRAMA E ESTATUTO DESTE PARTIDO E", 85, declY + 10, { align: "center" });
+  doc.text("NÃO SER FILIADO(A) A NENHUMA OUTRA AGREMIAÇÃO.", 85, declY + 15, { align: "center" });
 
-  // INSERT SIGNATURE HERE (Better Positioning)
+  // INSERT SIGNATURE HERE
   if (data.signature) {
     try {
-        // A assinatura é geralmente larga, ajustar para centralizar na linha
-        doc.addImage(data.signature, 'PNG', 40, declY + 18, 90, 18);
+        // Assinatura centralizada e com tamanho adequado
+        const sigWidth = 80;
+        const sigHeight = 25;
+        doc.addImage(data.signature, 'PNG', 45, declY + 18, sigWidth, sigHeight);
     } catch (e) {
         console.error("Error adding signature to PDF", e);
     }
@@ -141,23 +145,23 @@ export const generateAffiliationPDF = async (data: FormData) => {
 
   // Linha assinatura
   doc.setLineWidth(0.1);
-  doc.line(30, declY + 38, 140, declY + 38);
-  doc.setFontSize(6);
+  doc.line(30, declY + 42, 140, declY + 42);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("Assinatura do(a) filiado(a)", 85, declY + 42, { align: "center" });
+  doc.text("Assinatura do(a) filiado(a)", 85, declY + 46, { align: "center" });
 
   // Digital
-  doc.setFontSize(6);
-  doc.text("Impressão digital", 180, declY + 20, { align: "center" });
-  doc.text("(somente para analfabetos)", 180, declY + 23, { align: "center" });
+  doc.setFontSize(7);
+  doc.text("Impressão digital", 180, declY + 22, { align: "center" });
+  doc.text("(somente para analfabetos)", 180, declY + 26, { align: "center" });
 
   // --- Declaração do Recrutador/Validador ---
-  const recY = declY + declHeight + 8;
-  doc.setFontSize(9);
+  const recY = declY + declHeight + 10;
+  doc.setFontSize(10);
   
   // Linhas de preenchimento manual
   doc.text("Eu, ______________________________________________________ , Título de Eleitor ________________", 10, recY);
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.text("DECLARO, SOB AS PENAS DA LEI, QUE ATESTEI A IDENTIDADE E VONTADE DESTE(A) FILIADO(A).", 105, recY + 8, { align: "center" });
 
@@ -165,14 +169,14 @@ export const generateAffiliationPDF = async (data: FormData) => {
   const instY = recY + 15;
   doc.setDrawColor(blueColor);
   doc.setLineWidth(0.5);
-  doc.rect(10, instY, 190, 45);
+  doc.rect(10, instY, 190, 50);
   
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(blueColor);
   doc.text("INSTRUÇÕES E INFORMAÇÕES IMPORTANTES", 105, instY + 8, { align: "center" });
   
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
   const instructions = [
@@ -186,22 +190,20 @@ export const generateAffiliationPDF = async (data: FormData) => {
   let iY = instY + 16;
   instructions.forEach((inst) => {
     doc.text(inst, 15, iY);
-    iY += 6;
+    iY += 7;
   });
 
-  // --- Aviso Legal (Texto corrido justificado) ---
-  const noteY = instY + 50;
+  // --- Aviso Legal (Texto corrido) ---
+  const noteY = instY + 56;
   doc.setFontSize(7);
   doc.setFont("helvetica", "italic");
   const legalText = "Atenção: A veracidade das informações é de inteira responsabilidade do declarante. A filiação só será efetivada após processamento no sistema Filia/TSE nos prazos legais.";
-  // Usar splitTextToSize não é perfeito para justificar, mas é o padrão do jsPDF básico.
-  // Para justificar real, precisaria de lógica manual ou plugin. Vamos centralizar para ficar limpo.
-  doc.text(legalText, 105, noteY, { align: "center", maxWidth: 180 });
+  doc.text(legalText, 105, noteY, { align: "center", maxWidth: 185 });
 
   // --- Rodapé (Fundo Cinza Claro) ---
   const footY = 265;
-  doc.setFillColor(240, 240, 240); // Cinza bem claro
-  doc.setDrawColor(0); // Sem borda ou borda preta fina? Imagem mostra sem borda evidente na caixa cinza
+  doc.setFillColor(235, 235, 235);
+  doc.setDrawColor(0); 
   doc.setLineWidth(0);
   doc.rect(10, footY, 190, 15, "F");
   
@@ -210,7 +212,7 @@ export const generateAffiliationPDF = async (data: FormData) => {
   doc.setFont("helvetica", "bold");
   doc.text("Inteligentes - Sede Nacional - Brasília/DF", 105, footY + 6, { align: "center" });
   
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.text("Caixa Postal 78460 - CEP 01401-970", 105, footY + 11, { align: "center" });
 
