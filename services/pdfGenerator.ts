@@ -2,68 +2,87 @@
 import { jsPDF } from "jspdf";
 import { FormData } from "../types";
 
-// Helper to add justified text
-const addWrappedText = (doc: jsPDF, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number => {
-  const lines = doc.splitTextToSize(text, maxWidth);
-  doc.text(lines, x, y, { align: "justify", maxWidth: maxWidth });
-  return y + (lines.length * lineHeight);
+const LOGO_URL = 'https://renatorgomes.com/backup/intelis/inteligentes.png';
+
+// Helper to load image
+const loadImage = (url: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = url;
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+    });
 };
 
-export const generateAffiliationPDF = (data: FormData) => {
+export const generateAffiliationPDF = async (data: FormData) => {
   const doc = new jsPDF();
   const blueColor = "#004e89";
+
+  // Carregar Logo
+  let logoImg = null;
+  try {
+      logoImg = await loadImage(LOGO_URL);
+  } catch (e) {
+      console.error("Erro ao carregar logo", e);
+  }
 
   // --- Borda Principal ---
   doc.setLineWidth(0.5);
   doc.rect(10, 10, 190, 277);
 
   // --- Cabeçalho ---
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(blueColor);
-  doc.setFontSize(28);
-  doc.text("INTELIGENTES", 20, 25);
-  
-  // Logo symbol simulation (Três pontos conectados)
-  doc.setDrawColor("#28a745");
-  doc.setLineWidth(1.5);
-  doc.circle(75, 18, 2, 'S');
-  doc.line(75, 18, 80, 12);
-  doc.circle(80, 12, 1.5, 'S');
-  doc.line(75, 18, 70, 12);
-  doc.circle(70, 12, 1.5, 'S');
-  doc.line(75, 18, 75, 28); 
-  doc.circle(75, 28, 2, 'F'); // Ponto central verde preenchido
+  if (logoImg) {
+      const logoWidth = 60; // Ajuste conforme proporção
+      const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
+      doc.addImage(logoImg, 'PNG', 15, 15, logoWidth, logoHeight);
+  } else {
+      // Fallback text if image fails
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(blueColor);
+      doc.setFontSize(24);
+      doc.text("INTELIGENTES", 15, 25);
+  }
 
   doc.setTextColor(0, 0, 0);
-  doc.setFontSize(12);
-  doc.text("FICHA DE FILIAÇÃO PARTIDÁRIA", 130, 20);
-  doc.setFontSize(10);
-  doc.text("INTELIGENTES - INTELiS", 130, 26);
-  doc.text("CNPJ: 35.779.882/0001-10", 130, 32);
+  // Linha vertical separadora do cabeçalho
+  doc.setLineWidth(0.2);
+  doc.line(80, 15, 80, 35);
 
-  // Barra Azul separadora
-  doc.setFillColor(blueColor);
-  doc.rect(10, 38, 190, 8, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
+  // Textos do Cabeçalho (Direita)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("FICHA DE FILIAÇÃO PARTIDÁRIA", 85, 18);
+  
+  doc.setFontSize(10);
+  doc.text("INTELIGENTES - INTELiS", 85, 24);
   doc.setFont("helvetica", "normal");
-  doc.text("Resolução-TSE nº 23.571/2018, art. 12, §1º (Lei nº 9.096/95, art 9º, §1º)", 105, 43, { align: "center" });
+  doc.text("CNPJ: 35.779.882/0001-10", 85, 30);
+
+  // Barra Azul separadora (Resolução)
+  const resY = 40;
+  doc.setFillColor(blueColor);
+  doc.rect(10, resY, 190, 7, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold"); // Bold para legibilidade no fundo escuro
+  doc.text("Resolução-TSE nº 23.571/2018, art. 12, §1º (Lei nº 9.096/95, art 9º, §1º)", 105, resY + 4.5, { align: "center" });
 
   // --- Dados do Filiado (Grid) ---
-  const startY = 50;
+  const startY = 52;
   const rowHeight = 12;
 
   doc.setTextColor(0, 0, 0);
   doc.setDrawColor(0);
-  doc.setLineWidth(0.2);
+  doc.setLineWidth(0.1);
 
   // Linha 1: Nome
   doc.rect(10, startY, 190, rowHeight);
-  doc.setFontSize(7);
+  doc.setFontSize(6);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(blueColor);
-  doc.text("Nome do(a) filiado(a)", 12, startY + 4);
-  doc.setFontSize(11);
+  doc.text("Nome do(a) filiado(a)", 12, startY + 3);
+  doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
   doc.text(data.fullName.toUpperCase(), 12, startY + 9);
@@ -72,19 +91,19 @@ export const generateAffiliationPDF = (data: FormData) => {
   const row2Y = startY + rowHeight;
   doc.rect(10, row2Y, 190, rowHeight);
   
-  // Linhas verticais linha 2
+  // Linhas verticais linha 2 (Ajustadas visualmente)
   doc.line(50, row2Y, 50, row2Y + rowHeight); // After Data
-  doc.line(110, row2Y, 110, row2Y + rowHeight); // After Titulo
-  doc.line(150, row2Y, 150, row2Y + rowHeight); // After Zona
+  doc.line(100, row2Y, 100, row2Y + rowHeight); // After Titulo
+  doc.line(160, row2Y, 160, row2Y + rowHeight); // After Zona
 
   // Labels Linha 2
-  doc.setFontSize(7);
+  doc.setFontSize(6);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(blueColor);
-  doc.text("Data de Filiação", 12, row2Y + 4);
-  doc.text("Nº do Título", 52, row2Y + 4);
-  doc.text("Zona", 112, row2Y + 4);
-  doc.text("Seção", 152, row2Y + 4);
+  doc.text("Data de Filiação", 12, row2Y + 3);
+  doc.text("Nº do Título", 52, row2Y + 3);
+  doc.text("Zona", 102, row2Y + 3);
+  doc.text("Seção", 162, row2Y + 3);
 
   // Dados Linha 2
   const today = new Date().toLocaleDateString('pt-BR');
@@ -93,8 +112,8 @@ export const generateAffiliationPDF = (data: FormData) => {
   doc.setFont("helvetica", "normal");
   doc.text(today, 12, row2Y + 9);
   doc.text(data.voterTitle, 52, row2Y + 9);
-  doc.text(data.electoralCity, 112, row2Y + 9); 
-  doc.text(data.electoralState, 152, row2Y + 9);
+  doc.text(data.electoralCity, 102, row2Y + 9); 
+  doc.text(data.electoralState, 162, row2Y + 9);
 
   // --- Declaração e Assinatura ---
   const declY = row2Y + rowHeight;
@@ -110,44 +129,48 @@ export const generateAffiliationPDF = (data: FormData) => {
   doc.text("DECLARO ADERIR AO PROGRAMA E ESTATUTO DESTE PARTIDO E", 85, declY + 8, { align: "center" });
   doc.text("NÃO SER FILIADO(A) A NENHUMA OUTRA AGREMIAÇÃO.", 85, declY + 13, { align: "center" });
 
-  // INSERT SIGNATURE HERE
+  // INSERT SIGNATURE HERE (Better Positioning)
   if (data.signature) {
-    // Add image: image data, format, x, y, width, height
-    // Adjust position to fit above the line
     try {
-        doc.addImage(data.signature, 'PNG', 35, declY + 15, 100, 15);
+        // A assinatura é geralmente larga, ajustar para centralizar na linha
+        doc.addImage(data.signature, 'PNG', 40, declY + 18, 90, 18);
     } catch (e) {
         console.error("Error adding signature to PDF", e);
     }
   }
 
   // Linha assinatura
-  doc.line(20, declY + 32, 150, declY + 32);
-  doc.setFontSize(7);
+  doc.setLineWidth(0.1);
+  doc.line(30, declY + 38, 140, declY + 38);
+  doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
-  doc.text("Assinatura do(a) filiado(a)", 85, declY + 38, { align: "center" });
+  doc.text("Assinatura do(a) filiado(a)", 85, declY + 42, { align: "center" });
 
   // Digital
-  doc.setFontSize(7);
+  doc.setFontSize(6);
   doc.text("Impressão digital", 180, declY + 20, { align: "center" });
-  doc.text("(somente para analfabetos)", 180, declY + 24, { align: "center" });
+  doc.text("(somente para analfabetos)", 180, declY + 23, { align: "center" });
 
   // --- Declaração do Recrutador/Validador ---
-  const recY = declY + declHeight + 10;
+  const recY = declY + declHeight + 8;
   doc.setFontSize(9);
-  doc.text(`Eu, ______________________________________________________ , Título de Eleitor ________________`, 10, recY);
+  
+  // Linhas de preenchimento manual
+  doc.text("Eu, ______________________________________________________ , Título de Eleitor ________________", 10, recY);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
   doc.text("DECLARO, SOB AS PENAS DA LEI, QUE ATESTEI A IDENTIDADE E VONTADE DESTE(A) FILIADO(A).", 105, recY + 8, { align: "center" });
 
-  // --- Instruções ---
-  const instY = recY + 20;
+  // --- Instruções (Caixa com Borda Azul) ---
+  const instY = recY + 15;
   doc.setDrawColor(blueColor);
   doc.setLineWidth(0.5);
-  doc.rect(10, instY, 190, 40);
+  doc.rect(10, instY, 190, 45);
   
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(blueColor);
-  doc.text("INSTRUÇÕES E INFORMAÇÕES IMPORTANTES", 105, instY + 6, { align: "center" });
+  doc.text("INSTRUÇÕES E INFORMAÇÕES IMPORTANTES", 105, instY + 8, { align: "center" });
   
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
@@ -160,30 +183,36 @@ export const generateAffiliationPDF = (data: FormData) => {
     "5. Caso já seja filiado a outro partido, esta nova filiação cancelará a anterior automaticamente."
   ];
   
-  let iY = instY + 14;
-  instructions.forEach((inst, index) => {
+  let iY = instY + 16;
+  instructions.forEach((inst) => {
     doc.text(inst, 15, iY);
     iY += 6;
   });
 
-  // --- Aviso Legal ---
-  const noteY = instY + 45;
+  // --- Aviso Legal (Texto corrido justificado) ---
+  const noteY = instY + 50;
   doc.setFontSize(7);
   doc.setFont("helvetica", "italic");
   const legalText = "Atenção: A veracidade das informações é de inteira responsabilidade do declarante. A filiação só será efetivada após processamento no sistema Filia/TSE nos prazos legais.";
-  doc.text(doc.splitTextToSize(legalText, 190), 10, noteY);
+  // Usar splitTextToSize não é perfeito para justificar, mas é o padrão do jsPDF básico.
+  // Para justificar real, precisaria de lógica manual ou plugin. Vamos centralizar para ficar limpo.
+  doc.text(legalText, 105, noteY, { align: "center", maxWidth: 180 });
 
-  // --- Rodapé ---
+  // --- Rodapé (Fundo Cinza Claro) ---
   const footY = 265;
-  doc.setFillColor(230, 230, 230);
-  doc.setDrawColor(0);
+  doc.setFillColor(240, 240, 240); // Cinza bem claro
+  doc.setDrawColor(0); // Sem borda ou borda preta fina? Imagem mostra sem borda evidente na caixa cinza
+  doc.setLineWidth(0);
   doc.rect(10, footY, 190, 15, "F");
-  doc.setFontSize(12);
+  
+  doc.setFontSize(10);
   doc.setTextColor(blueColor);
   doc.setFont("helvetica", "bold");
-  doc.text("Inteligentes - Sede Nacional - Brasília/DF", 105, footY + 7, { align: "center" });
+  doc.text("Inteligentes - Sede Nacional - Brasília/DF", 105, footY + 6, { align: "center" });
+  
   doc.setFontSize(8);
-  doc.text("Caixa Postal 78460 - CEP 01401-970", 105, footY + 12, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.text("Caixa Postal 78460 - CEP 01401-970", 105, footY + 11, { align: "center" });
 
   doc.save("Ficha-Filiacao-INTELIGENTES.pdf");
 };
@@ -191,7 +220,7 @@ export const generateAffiliationPDF = (data: FormData) => {
 export const generateStatutePDF = () => {
   const doc = new jsPDF();
   let y = 20;
-  const lineHeight = 5; // Espaçamento menor para caber mais texto
+  const lineHeight = 5;
   const pageHeight = 280;
   const margin = 20;
   const maxWidth = 170;
@@ -300,26 +329,12 @@ export const generateStatutePDF = () => {
 
   addSubtitle("DOS ÓRGÃOS PARTIDÁRIOS");
   addArticle("Art. 15. O Inteligentes é composto segundo a seguinte estrutura: I - Órgãos de deliberação especial: Convenções, Conselho Político Nacional, Diretórios. II - Órgãos de direção: Comissões Executivas, Comissões Provisórias. III - Órgãos de ação: Inteligentes Mulher, Inteligentes Jovem, Inteligentes Inclusiva. IV - Órgãos auxiliares: Conselho Fiscal, Conselho de Ética, Procuradoria Jurídica.");
-
-  addSubtitle("DAS FINANÇAS E PATRIMÔNIO");
-  addArticle("Art. 88. Anualmente, as Comissões Executivas remeterão à Justiça Eleitoral a prestação de contas.");
-  addArticle("§ 2º O Inteligentes adotará sistema de gestão e compliance para garantir a integridade e transparência.");
-  addArticle("§ 3º É vedada a locação ou compra de bens e serviços, inclusive de empresas em que participem dirigentes e filiados.");
   
-  addArticle("Art. 89. Receitas: I - Fundo Partidário; II - Doações de pessoas físicas; III - Sobras de campanha; IV - Doações de outros partidos. V - Recursos próprios.");
-  addArticle("Art. 94. É vedado receber recursos de origem estrangeira, entes públicos (salvo fundo partidário) ou de origem não identificada.");
+  addArticle("Art. 118. Desde a fundação até a constituição do Diretório Nacional e sua Comissão Executiva Nacional, o Inteligentes será dirigido por Comissão Provisória Nacional.");
 
-  addSubtitle("DO COMPLIANCE");
-  addArticle("Art. 100. O Inteligentes adotará as boas práticas de compliance no prazo de 6 meses do registro.");
-  addArticle("Art. 101. Serão adotados: Código de Ética, medidas de transparência, auditoria independente e proibição de nepotismo em contratações.");
-
-  addSubtitle("DISPOSIÇÕES GERAIS");
-  addArticle("Art. 115. O presente Estatuto, o Programa e a Ata de Fundação são os documentos originais de constituição.");
+  addSubtitle("DISPOSIÇÕES FINAIS");
   addArticle("Art. 122. O Inteligentes terá sede e foro na Capital Federal.");
   addArticle("Art. 124. O presente Estatuto entrará em vigor na data de seu registro no Registro Civil de Pessoas Jurídicas da Capital Federal.");
-
-  addSubtitle("DISPOSIÇÕES ESPECIAIS DE FUNDAÇÃO");
-  addArticle("Art. 118. Desde a fundação até a constituição do Diretório Nacional e sua Comissão Executiva Nacional, o Inteligentes será dirigido por Comissão Provisória Nacional.");
   
   y += 10;
   doc.text("Brasília-DF, 21 de novembro de 2025.", margin, y);
