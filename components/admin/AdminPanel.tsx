@@ -124,7 +124,7 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
                         <div className="flex items-center gap-2 text-xs text-gray-400">
                              <MapPin size={12} /> {user.city}/{user.addressState}
                         </div>
-                        <div className="absolute right-4 bottom-4 text-gray-300">
+                        <div className="absolute right-4 bottom-4 text-gray-300 md:hidden">
                             <ChevronLeft size={16} className="rotate-180" />
                         </div>
                     </li>

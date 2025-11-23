@@ -2,6 +2,7 @@
 import { jsPDF } from "jspdf";
 import { FormData } from "../types";
 
+// URL Oficial
 const LOGO_URL = 'https://renatorgomes.com/backup/intelis/inteligentes.png';
 
 // Helper to load image
@@ -32,35 +33,37 @@ export const generateAffiliationPDF = async (data: FormData) => {
   doc.rect(10, 10, 190, 277);
 
   // --- Cabeçalho ---
+  // Layout: Logo Esquerda | Textos Direita (Alinhados à direita)
+  const headerY = 15;
+  
   if (logoImg) {
-      // Logo à esquerda, maior e com proporção correta
-      const logoWidth = 65; 
+      // Logo
+      const logoWidth = 55; 
       const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
-      // Ajuste vertical para centralizar visualmente com os textos à direita
-      doc.addImage(logoImg, 'PNG', 15, 15, logoWidth, logoHeight);
+      doc.addImage(logoImg, 'PNG', 12, headerY, logoWidth, logoHeight);
   } else {
+      // Fallback Text
       doc.setFont("helvetica", "bold");
       doc.setTextColor(blueColor);
       doc.setFontSize(24);
-      doc.text("INTELIGENTES", 15, 30);
+      doc.text("INTELIGENTES", 15, headerY + 10);
   }
 
   doc.setTextColor(0, 0, 0);
+  const rightMargin = 195; // Alinhado à direita
   
-  // Textos do Cabeçalho (Alinhados à direita conforme referência)
-  const rightMargin = 195;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.text("FICHA DE FILIAÇÃO PARTIDÁRIA", rightMargin, 22, { align: "right" });
   
-  doc.setFontSize(12);
+  doc.setFontSize(13);
   doc.text("INTELIGENTES - INTELiS", rightMargin, 29, { align: "right" });
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   doc.text("CNPJ: 12.345.678/0001-90", rightMargin, 36, { align: "right" });
 
-  // Barra Azul separadora (Resolução) - Abaixo da logo e textos
+  // Barra Azul separadora (Resolução)
   const resY = 45;
   doc.setFillColor(blueColor);
   doc.rect(10, resY, 190, 8, "F");
@@ -86,7 +89,7 @@ export const generateAffiliationPDF = async (data: FormData) => {
   
   doc.setFontSize(12);
   doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold"); // Nome em negrito e maior
+  doc.setFont("helvetica", "bold");
   doc.text(data.fullName.toUpperCase(), 12, startY + 12);
 
   // Linha 2: Data, Título, Zona, Seção
@@ -95,7 +98,7 @@ export const generateAffiliationPDF = async (data: FormData) => {
   
   // Linhas verticais linha 2
   doc.line(50, row2Y, 50, row2Y + rowHeight); // After Data
-  doc.line(110, row2Y, 110, row2Y + rowHeight); // After Titulo (Aumentado)
+  doc.line(110, row2Y, 110, row2Y + rowHeight); // After Titulo
   doc.line(170, row2Y, 170, row2Y + rowHeight); // After Zona
 
   // Labels Linha 2
@@ -115,9 +118,8 @@ export const generateAffiliationPDF = async (data: FormData) => {
   doc.text(today, 12, row2Y + 12);
   doc.text(data.voterTitle || "", 52, row2Y + 12);
   
-  // Zona/Cidade
   const zonaText = data.electoralCity ? `${data.electoralCity} - ${data.electoralState}` : "---";
-  doc.setFontSize(10); // Ajuste se a cidade for longa
+  doc.setFontSize(10);
   doc.text(zonaText, 112, row2Y + 12);
   
   doc.setFontSize(11);
@@ -137,25 +139,28 @@ export const generateAffiliationPDF = async (data: FormData) => {
   doc.text("DECLARO ADERIR AO PROGRAMA E ESTATUTO DESTE PARTIDO E", 85, declY + 12, { align: "center" });
   doc.text("NÃO SER FILIADO(A) A NENHUMA OUTRA AGREMIAÇÃO.", 85, declY + 18, { align: "center" });
 
-  // INSERT SIGNATURE HERE - Ajustado para ficar sobre a linha
+  // Linha assinatura
+  const lineY = declY + 50;
+  doc.setLineWidth(0.2);
+  doc.line(35, lineY, 135, lineY);
+
+  // INSERT SIGNATURE HERE - Sobrepondo a linha
   if (data.signature) {
     try {
         const sigWidth = 90;
-        const sigHeight = 30;
-        // Centralizado horizontalmente na caixa esquerda (largura 150, centro 75 -> x=10+75-45=40)
-        doc.addImage(data.signature, 'PNG', 40, declY + 25, sigWidth, sigHeight);
+        const sigHeight = 35;
+        // Centralizado na caixa esquerda (centro 75)
+        // Posicionado para cortar a linha (linha em lineY)
+        // Assinatura começando em lineY - 25
+        doc.addImage(data.signature, 'PNG', 40, lineY - 28, sigWidth, sigHeight);
     } catch (e) {
         console.error("Error adding signature to PDF", e);
     }
   }
-
-  // Linha assinatura
-  doc.setLineWidth(0.2);
-  doc.line(35, declY + 55, 135, declY + 55);
   
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.text("Assinatura do(a) filiado(a)", 85, declY + 60, { align: "center" });
+  doc.text("Assinatura do(a) filiado(a)", 85, lineY + 5, { align: "center" });
 
   // Digital
   doc.setFontSize(7);
@@ -167,7 +172,6 @@ export const generateAffiliationPDF = async (data: FormData) => {
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
   
-  // Linhas de preenchimento manual
   doc.text("Eu, ______________________________________________________ , Título de Eleitor ________________", 12, recY);
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
@@ -243,7 +247,7 @@ export const generateStatutePDF = async () => {
     }
   };
 
-  // --- CABEÇALHO CORPORATIVO ---
+  // --- CABEÇALHO CORPORATIVO (ESTATUTO) ---
   // Carregar Logo
   let logoImg = null;
   try {
