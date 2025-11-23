@@ -2,7 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { FormData, ValidationErrors } from '../../types';
 import { Input } from '../ui/Input';
-import { fetchStates, fetchCities } from '../../services/api';
+import { fetchStates, fetchCities, validateElectoralZone } from '../../services/api';
+import { formatZone, formatSection } from '../../utils/validators';
+import { Check, AlertCircle, Loader2 } from 'lucide-react';
 
 interface Step3Props {
   data: FormData;
@@ -47,6 +49,10 @@ export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, er
   const [cities, setCities] = useState<IBGECity[]>([]);
   const [loadingCities, setLoadingCities] = useState(false);
   const [availableYears, setAvailableYears] = useState<string[]>([]);
+  
+  // State for Zone/Section Validation
+  const [validatingZone, setValidatingZone] = useState(false);
+  const [zoneValid, setZoneValid] = useState<boolean | null>(null);
 
   useEffect(() => {
     fetchStates().then(setStates);
@@ -64,35 +70,33 @@ export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, er
     }
   }, [data.electoralState]);
 
-  // Lógica de Ciclos Eleitorais rigorosa conforme solicitação
+  const handleZoneSectionBlur = async () => {
+      if (data.electoralState && data.electoralCity && data.voterZone && data.voterSection) {
+          setValidatingZone(true);
+          setZoneValid(null);
+          const isValid = await validateElectoralZone(data.electoralState, data.electoralCity, data.voterZone, data.voterSection);
+          setValidatingZone(false);
+          setZoneValid(isValid);
+      }
+  };
+
+  // Lógica de Ciclos Eleitorais rigorosa
   const calculateElectionYears = (office: string): string[] => {
       if (!office) return [];
 
       const isMunicipal = MUNICIPAL_OFFICES.includes(office);
-      
-      // Definição dos anos-base iniciais
-      // Municipal: 2024, Federal: 2026
       let baseYear = isMunicipal ? 2024 : 2026;
-      
       const today = new Date();
       const currentYear = today.getFullYear();
       
-      // Avança o ano-base para o ciclo mais próximo (atual ou futuro)
-      // Enquanto o ano-base for menor que o ano atual, soma 4
-      // Ex: Em 2025, para municipal (base 2024): 2024 < 2025? Sim. Soma 4 = 2028.
-      // Ex: Em 2025, para federal (base 2026): 2026 < 2025? Não. Mantém 2026.
       while (baseYear < currentYear) {
           baseYear += 4;
       }
 
-      // Se o ano atual é menor que o ano-base calculado (ex: estamos em 2025, federal é 2026)
-      // Então estamos antes da eleição, logo o ano-base é válido.
       if (currentYear < baseYear) {
           return [baseYear.toString()];
       }
 
-      // Se estamos no ano da eleição (currentYear === baseYear)
-      // Verificamos a data de corte: 15 de Agosto (mês 7, dia 15)
       const cutoffMonth = 7; // Agosto
       const cutoffDay = 15;
 
@@ -101,27 +105,20 @@ export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, er
           (today.getMonth() === cutoffMonth && today.getDate() > cutoffDay);
 
       if (isAfterCutoff) {
-          // A partir de 16/08 do ano da eleição, bloqueia o ano atual e libera os próximos 2 ciclos
-          // Ex: Em 16/08/2024 (municipal), libera 2028 e 2032.
           return [(baseYear + 4).toString(), (baseYear + 8).toString()];
       } else {
-          // Até 15/08 do ano da eleição, o ano atual ainda é a opção válida
-          // Ex: Em 10/08/2024 (municipal), libera 2024.
           return [baseYear.toString()];
       }
   };
 
-  // Atualiza os anos disponíveis quando o cargo muda
   useEffect(() => {
     if (data.isCandidate && data.politicalOffice) {
         const years = calculateElectionYears(data.politicalOffice);
         setAvailableYears(years);
         
-        // Se houver apenas uma opção, seleciona automaticamente
         if (years.length === 1) {
             updateData({ electionYear: years[0] });
         } else if (data.electionYear && !years.includes(data.electionYear)) {
-            // Se a opção atual não estiver na lista válida, reseta
             updateData({ electionYear: '' });
         }
     } else if (!data.isCandidate) {
@@ -212,6 +209,49 @@ export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, er
             </select>
             {errors.electoralCity && <p className="mt-1 text-xs text-red-500">{errors.electoralCity}</p>}
         </div>
+      </div>
+      
+      {/* Zona e Seção */}
+      <div className="grid grid-cols-2 gap-4">
+          <div className="relative">
+             <Input 
+                label="Zona"
+                value={data.voterZone}
+                onChange={(e) => updateData({ voterZone: formatZone(e.target.value) })}
+                onBlur={handleZoneSectionBlur}
+                maxLength={3}
+                placeholder="000"
+                required
+                disabled={isUpdating}
+             />
+          </div>
+          <div className="relative">
+             <Input 
+                label="Seção"
+                value={data.voterSection}
+                onChange={(e) => updateData({ voterSection: formatSection(e.target.value) })}
+                onBlur={handleZoneSectionBlur}
+                maxLength={4}
+                placeholder="0000"
+                required
+                disabled={isUpdating}
+             />
+             {validatingZone && (
+                 <div className="absolute right-3 top-9 text-intelis-blue animate-spin">
+                     <Loader2 size={18} />
+                 </div>
+             )}
+             {!validatingZone && zoneValid === true && (
+                 <div className="absolute right-3 top-9 text-green-500" title="Zona/Seção Válida">
+                     <Check size={18} />
+                 </div>
+             )}
+             {!validatingZone && zoneValid === false && (
+                 <div className="absolute right-3 top-9 text-orange-500" title="Verifique se a Zona/Seção está correta para este município">
+                     <AlertCircle size={18} />
+                 </div>
+             )}
+          </div>
       </div>
       
       <div className="mb-4">

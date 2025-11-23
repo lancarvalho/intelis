@@ -23,6 +23,8 @@ export interface FormData {
 
   // Step 3: Complementary
   voterTitle: string; // Título de Eleitor
+  voterZone: string; // Zona Eleitoral
+  voterSection: string; // Seção Eleitoral
   electoralState: string;
   electoralCity: string;
   gender: string;
@@ -69,6 +71,8 @@ export const INITIAL_DATA: FormData = {
   number: '',
   complement: '',
   voterTitle: '',
+  voterZone: '',
+  voterSection: '',
   electoralState: '',
   electoralCity: '',
   gender: '',

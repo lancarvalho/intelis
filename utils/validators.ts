@@ -88,3 +88,11 @@ export const formatCEP = (value: string) => {
     .replace(/(\d{5})(\d)/, '$1-$2')
     .replace(/(-\d{3})\d+?$/, '$1');
 };
+
+export const formatZone = (value: string) => {
+    return value.replace(/\D/g, '').slice(0, 3);
+};
+
+export const formatSection = (value: string) => {
+    return value.replace(/\D/g, '').slice(0, 4);
+};

@@ -36,6 +36,27 @@ export const fetchCities = async (uf: string) => {
   }
 };
 
+// Simulation of electoral data validation
+// In a production environment, this would connect to a backend that queries TSE databases
+export const validateElectoralZone = async (uf: string, city: string, zone: string, section: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            // Mock validation logic
+            if (!uf || !city || !zone || !section) {
+                resolve(false);
+                return;
+            }
+            
+            // Simulate valid zones (usually 3 digits) and sections (up to 4 digits)
+            // This is a placeholder for the real API call
+            const isValidZone = zone.length === 3;
+            const isValidSection = section.length <= 4 && section.length > 0;
+            
+            resolve(isValidZone && isValidSection);
+        }, 1000);
+    });
+};
+
 // Listas estáticas baseadas na análise do sistema de referência
 export const getSchoolingLevels = () => [
   { id: 'analis', label: 'Analfabeto' },
@@ -101,7 +122,9 @@ export const fetchUserDataByCPF = async (cpf: string): Promise<FormData | null> 
           religion: 'catolica',
           electoralState: 'DF',
           electoralCity: 'Brasília',
-          voterTitle: '123456789012'
+          voterTitle: '123456789012',
+          voterZone: '001',
+          voterSection: '0123'
         });
       } else {
         resolve(null);
@@ -157,6 +180,8 @@ export const getPendingAffiliations = async (): Promise<FormData[]> => {
           addressState: 'SP',
           motherName: 'Clara Souza',
           voterTitle: '123412341234',
+          voterZone: '054',
+          voterSection: '0110',
           selfie: 'https://randomuser.me/api/portraits/women/44.jpg', // Mock Image
           // Mock Docs (usually these are URLs from bucket)
           docFront: new File([""], "frente.jpg"), 
@@ -175,6 +200,8 @@ export const getPendingAffiliations = async (): Promise<FormData[]> => {
           addressState: 'RJ',
           motherName: 'Joana Pereira',
           voterTitle: '432143214321',
+          voterZone: '120',
+          voterSection: '0045',
           selfie: 'https://randomuser.me/api/portraits/men/32.jpg',
           docFront: new File([""], "frente.jpg"), 
           docBack: new File([""], "verso.jpg")

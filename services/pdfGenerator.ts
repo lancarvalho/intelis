@@ -124,12 +124,12 @@ export const generateAffiliationPDF = async (data: FormData) => {
   doc.text(today, 12, row2Y + 12);
   doc.text(data.voterTitle || "", 52, row2Y + 12);
   
-  const zonaText = data.electoralCity ? `${data.electoralCity} - ${data.electoralState}` : "---";
+  const zonaText = data.voterZone ? `${data.voterZone}` : data.electoralCity ? `${data.electoralCity}` : "---";
   doc.setFontSize(10);
   doc.text(zonaText, 112, row2Y + 12);
   
   doc.setFontSize(11);
-  doc.text("---", 172, row2Y + 12); 
+  doc.text(data.voterSection || "---", 172, row2Y + 12); 
 
   // --- Declaração e Assinatura ---
   const declY = row2Y + rowHeight;
