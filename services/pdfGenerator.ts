@@ -5,15 +5,25 @@ import { FormData } from "../types";
 // URL Oficial
 const LOGO_URL = 'https://renatorgomes.com/backup/intelis/inteligentes.png';
 
-// Helper to load image
-const loadImage = (url: string): Promise<HTMLImageElement> => {
+// Helper to load image as Base64 (More robust for PDF generation)
+const getBase64FromUrl = async (url: string): Promise<string> => {
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error(`Failed to fetch image: ${res.statusText}`);
+    const blob = await res.blob();
     return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = url;
-        img.onload = () => resolve(img);
-        img.onerror = (e) => reject(e);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') resolve(reader.result);
+        else reject(new Error("Failed to convert to base64"));
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
     });
+  } catch (error) {
+    console.warn("Logo load failed (likely CORS), using fallback text.", error);
+    return "";
+  }
 };
 
 export const generateAffiliationPDF = async (data: FormData) => {
@@ -21,12 +31,7 @@ export const generateAffiliationPDF = async (data: FormData) => {
   const blueColor = "#004e89";
 
   // Carregar Logo
-  let logoImg = null;
-  try {
-      logoImg = await loadImage(LOGO_URL);
-  } catch (e) {
-      console.error("Erro ao carregar logo", e);
-  }
+  const logoBase64 = await getBase64FromUrl(LOGO_URL);
 
   // --- Borda Principal ---
   doc.setLineWidth(0.5);
@@ -36,11 +41,12 @@ export const generateAffiliationPDF = async (data: FormData) => {
   // Layout: Logo Esquerda | Textos Direita (Alinhados à direita)
   const headerY = 15;
   
-  if (logoImg) {
+  if (logoBase64) {
       // Logo
       const logoWidth = 55; 
-      const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
-      doc.addImage(logoImg, 'PNG', 12, headerY, logoWidth, logoHeight);
+      // Aspect ratio assumption or calculation if possible. Assuming ~3:1 for the logo provided.
+      const logoHeight = 18; 
+      doc.addImage(logoBase64, 'PNG', 12, headerY, logoWidth, logoHeight);
   } else {
       // Fallback Text
       doc.setFont("helvetica", "bold");
@@ -57,7 +63,7 @@ export const generateAffiliationPDF = async (data: FormData) => {
   doc.text("FICHA DE FILIAÇÃO PARTIDÁRIA", rightMargin, 22, { align: "right" });
   
   doc.setFontSize(13);
-  doc.text("INTELIGENTES - INTELiS", rightMargin, 29, { align: "right" });
+  doc.text("INTELIGENTES - INTELIS", rightMargin, 29, { align: "right" });
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
@@ -147,12 +153,10 @@ export const generateAffiliationPDF = async (data: FormData) => {
   // INSERT SIGNATURE HERE - Sobrepondo a linha
   if (data.signature) {
     try {
-        const sigWidth = 90;
-        const sigHeight = 35;
-        // Centralizado na caixa esquerda (centro 75)
-        // Posicionado para cortar a linha (linha em lineY)
-        // Assinatura começando em lineY - 25
-        doc.addImage(data.signature, 'PNG', 40, lineY - 28, sigWidth, sigHeight);
+        const sigWidth = 80;
+        const sigHeight = 30;
+        // Posicionar a assinatura logo acima da linha (lineY)
+        doc.addImage(data.signature, 'PNG', 45, lineY - 25, sigWidth, sigHeight);
     } catch (e) {
         console.error("Error adding signature to PDF", e);
     }
@@ -249,18 +253,14 @@ export const generateStatutePDF = async () => {
 
   // --- CABEÇALHO CORPORATIVO (ESTATUTO) ---
   // Carregar Logo
-  let logoImg = null;
-  try {
-      logoImg = await loadImage(LOGO_URL);
-  } catch (e) {
-      console.error("Erro ao carregar logo para estatuto", e);
-  }
+  const logoBase64 = await getBase64FromUrl(LOGO_URL);
 
-  if (logoImg) {
+  if (logoBase64) {
     const logoWidth = 50; 
-    const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
+    // Approximating aspect ratio if needed, or using fixed width
+    const logoHeight = 16; 
     // Centralizado
-    doc.addImage(logoImg, 'PNG', 105 - (logoWidth/2), y, logoWidth, logoHeight);
+    doc.addImage(logoBase64, 'PNG', 105 - (logoWidth/2), y, logoWidth, logoHeight);
     y += logoHeight + 5;
   }
 
@@ -273,7 +273,7 @@ export const generateStatutePDF = async () => {
   
   doc.setFontSize(12);
   doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "normal"); // Helvetica para dados técnicos fica mais limpo
+  doc.setFont("helvetica", "normal");
   doc.text("CNPJ: 12.345.678/0001-90", 105, y, { align: "center" });
   y += 5;
 

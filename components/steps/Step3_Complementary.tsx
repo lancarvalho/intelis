@@ -64,34 +64,35 @@ export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, er
     }
   }, [data.electoralState]);
 
-  // Lógica de Ciclos Eleitorais
+  // Lógica de Ciclos Eleitorais rigorosa conforme solicitação
   const calculateElectionYears = (office: string): string[] => {
       if (!office) return [];
 
       const isMunicipal = MUNICIPAL_OFFICES.includes(office);
       
       // Definição dos anos-base iniciais
+      // Municipal: 2024, Federal: 2026
       let baseYear = isMunicipal ? 2024 : 2026;
       
       const today = new Date();
       const currentYear = today.getFullYear();
       
-      // Avança o ano-base para o ciclo atual ou futuro mais próximo
+      // Avança o ano-base para o ciclo mais próximo (atual ou futuro)
       // Enquanto o ano-base for menor que o ano atual, soma 4
+      // Ex: Em 2025, para municipal (base 2024): 2024 < 2025? Sim. Soma 4 = 2028.
+      // Ex: Em 2025, para federal (base 2026): 2026 < 2025? Não. Mantém 2026.
       while (baseYear < currentYear) {
           baseYear += 4;
       }
 
-      // Agora baseYear é >= currentYear.
-      
-      // Se o ano atual é anterior ao ano da eleição (ex: estamos em 2025, eleição é 2026)
+      // Se o ano atual é menor que o ano-base calculado (ex: estamos em 2025, federal é 2026)
+      // Então estamos antes da eleição, logo o ano-base é válido.
       if (currentYear < baseYear) {
           return [baseYear.toString()];
       }
 
       // Se estamos no ano da eleição (currentYear === baseYear)
-      // Verificamos a data de corte: 15 de Agosto
-      // Mês em JS é 0-11, então Agosto é 7.
+      // Verificamos a data de corte: 15 de Agosto (mês 7, dia 15)
       const cutoffMonth = 7; // Agosto
       const cutoffDay = 15;
 
@@ -100,10 +101,12 @@ export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, er
           (today.getMonth() === cutoffMonth && today.getDate() > cutoffDay);
 
       if (isAfterCutoff) {
-          // A partir de 16/08, bloqueia o ano atual e libera os próximos 2
+          // A partir de 16/08 do ano da eleição, bloqueia o ano atual e libera os próximos 2 ciclos
+          // Ex: Em 16/08/2024 (municipal), libera 2028 e 2032.
           return [(baseYear + 4).toString(), (baseYear + 8).toString()];
       } else {
-          // Até 15/08, o ano atual é a opção válida
+          // Até 15/08 do ano da eleição, o ano atual ainda é a opção válida
+          // Ex: Em 10/08/2024 (municipal), libera 2024.
           return [baseYear.toString()];
       }
   };
@@ -115,10 +118,10 @@ export const Step3_Complementary: React.FC<Step3Props> = ({ data, updateData, er
         setAvailableYears(years);
         
         // Se houver apenas uma opção, seleciona automaticamente
-        // Se a opção atual não estiver na lista válida, reseta
         if (years.length === 1) {
             updateData({ electionYear: years[0] });
         } else if (data.electionYear && !years.includes(data.electionYear)) {
+            // Se a opção atual não estiver na lista válida, reseta
             updateData({ electionYear: '' });
         }
     } else if (!data.isCandidate) {

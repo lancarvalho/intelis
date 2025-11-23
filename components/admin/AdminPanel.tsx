@@ -4,7 +4,7 @@ import { FormData } from '../../types';
 import { getPendingAffiliations, reviewAffiliation } from '../../services/api';
 import { Button } from '../ui/Button';
 import { AdminLogin } from './AdminLogin';
-import { CheckCircle, XCircle, User, FileText, MapPin, RefreshCw, Search, LogOut, ExternalLink, ChevronLeft, Calendar, Phone, Mail } from 'lucide-react';
+import { CheckCircle, XCircle, User, FileText, MapPin, RefreshCw, Search, LogOut, ExternalLink, ChevronLeft, Calendar, Phone, Mail, ArrowLeft } from 'lucide-react';
 
 export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -69,8 +69,8 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-gray-100 overflow-hidden font-sans">
-      {/* Sidebar List - Hidden on mobile if a user is selected (Master View) */}
+    <div className="flex flex-col md:flex-row h-dvh bg-gray-100 overflow-hidden font-sans">
+      {/* Sidebar List - Only visible on mobile if NO user is selected */}
       <div className={`w-full md:w-96 bg-white border-r border-gray-200 flex flex-col h-full z-10 ${selectedUser ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b border-gray-200 bg-intelis-darkBlue text-white flex justify-between items-center shadow-md shrink-0">
             <div>
@@ -125,7 +125,8 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
                              <MapPin size={12} /> {user.city}/{user.addressState}
                         </div>
                         <div className="absolute right-4 bottom-4 text-gray-300 md:hidden">
-                            <ChevronLeft size={16} className="rotate-180" />
+                             {/* Arrow indicating click */}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                         </div>
                     </li>
                 ))}
@@ -148,17 +149,16 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
       <div className={`flex-1 bg-gray-100 flex flex-col h-full overflow-hidden relative ${!selectedUser ? 'hidden md:flex' : 'flex'}`}>
          {selectedUser ? (
              <div className="flex-1 flex flex-col h-full overflow-hidden">
-                 {/* Mobile Header for Detail */}
-                 <div className="md:hidden bg-white p-3 border-b flex items-center gap-3 sticky top-0 z-20 shadow-sm shrink-0">
+                 {/* Mobile Header for Detail - Fixed at top */}
+                 <div className="md:hidden bg-white p-2 border-b flex items-center gap-3 sticky top-0 z-20 shadow-sm shrink-0 h-14">
                      <button 
                         onClick={() => setSelectedUser(null)} 
-                        className="p-2 -ml-1 text-gray-600 hover:bg-gray-100 rounded-full active:bg-gray-200 transition-colors"
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-full active:bg-gray-200 transition-colors flex items-center text-sm font-medium"
                      >
-                         <ChevronLeft size={24} />
+                         <ArrowLeft size={20} className="mr-1" /> Voltar
                      </button>
-                     <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-800 truncate text-sm leading-tight">{selectedUser.fullName}</h3>
-                        <p className="text-xs text-gray-500">Análise de Filiação</p>
+                     <div className="flex-1 min-w-0 text-right pr-2">
+                        <p className="text-xs font-bold text-gray-800 truncate">{selectedUser.fullName}</p>
                      </div>
                  </div>
 
@@ -169,13 +169,13 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
                          <div className="p-6 border-b border-gray-100 bg-gradient-to-br from-white to-blue-50/50">
                              <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
                                 <div>
-                                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{selectedUser.fullName}</h1>
+                                    <h1 className="text-xl md:text-3xl font-bold text-gray-900">{selectedUser.fullName}</h1>
                                     <div className="flex flex-wrap gap-2 mt-3">
                                         <span className="inline-flex items-center gap-1.5 bg-white px-3 py-1 rounded-full border border-gray-200 text-xs font-medium text-gray-600 shadow-sm">
                                             <User size={12} className="text-intelis-blue"/> {selectedUser.cpf}
                                         </span>
                                         <span className="inline-flex items-center gap-1.5 bg-white px-3 py-1 rounded-full border border-gray-200 text-xs font-medium text-gray-600 shadow-sm">
-                                            <FileText size={12} className="text-intelis-blue"/> Título: {selectedUser.voterTitle}
+                                            <FileText size={12} className="text-intelis-blue"/> {selectedUser.voterTitle}
                                         </span>
                                         <span className="inline-flex items-center gap-1.5 bg-white px-3 py-1 rounded-full border border-gray-200 text-xs font-medium text-gray-600 shadow-sm">
                                             <MapPin size={12} className="text-intelis-blue"/> {selectedUser.city}-{selectedUser.addressState}
@@ -183,7 +183,7 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
                                     </div>
                                 </div>
                                 <div className="px-3 py-1 bg-yellow-50 text-yellow-700 rounded-lg text-xs font-bold uppercase tracking-wide border border-yellow-200 self-start shadow-sm">
-                                    Status: Pendente
+                                    Pendente
                                 </div>
                              </div>
                          </div>
@@ -193,10 +193,10 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
                              <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
                                  <Search size={16} className="text-intelis-blue"/> Validação Visual
                              </h4>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                 <div className="space-y-2">
-                                     <p className="text-xs font-medium text-gray-500 uppercase text-center">Selfie (Biometria)</p>
-                                     <div className="aspect-[3/4] bg-gray-900 rounded-lg overflow-hidden border border-gray-200 relative shadow-md group max-w-[200px] mx-auto">
+                             <div className="grid grid-cols-2 gap-4 md:gap-6">
+                                 <div className="space-y-2 flex flex-col items-center">
+                                     <p className="text-xs font-medium text-gray-500 uppercase text-center">Selfie</p>
+                                     <div className="aspect-[3/4] w-full max-w-[150px] bg-gray-900 rounded-lg overflow-hidden border border-gray-200 relative shadow-md group">
                                          {selectedUser.selfie ? (
                                              <img src={selectedUser.selfie} className="w-full h-full object-cover" alt="Selfie" />
                                          ) : (
@@ -204,12 +204,12 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
                                          )}
                                      </div>
                                  </div>
-                                 <div className="space-y-2">
-                                     <p className="text-xs font-medium text-gray-500 uppercase text-center">Documento (Frente)</p>
-                                     <div className="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center relative max-w-[200px] mx-auto">
+                                 <div className="space-y-2 flex flex-col items-center">
+                                     <p className="text-xs font-medium text-gray-500 uppercase text-center">Documento</p>
+                                     <div className="aspect-[3/4] w-full max-w-[150px] bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center relative">
                                          <FileText size={32} className="text-gray-300 mb-2" />
-                                         <span className="text-gray-400 text-xs text-center px-4 absolute bottom-4 w-full">
-                                             Documento protegido
+                                         <span className="text-gray-400 text-xs text-center px-2 absolute bottom-4 w-full">
+                                             Frente
                                          </span>
                                      </div>
                                  </div>
@@ -258,8 +258,8 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
                  </div>
                 
                  {/* Actions Toolbar */}
-                 <div className="p-4 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10 shrink-0">
-                     <div className="max-w-5xl mx-auto flex gap-3 justify-end">
+                 <div className="p-4 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10 shrink-0 safe-bottom">
+                     <div className="max-w-5xl mx-auto flex gap-3 justify-center md:justify-end">
                          <Button 
                             variant="outline" 
                             onClick={() => handleDecision(selectedUser.id!, 'rejected')}
@@ -281,7 +281,7 @@ export const AdminPanel: React.FC<{ onExit: () => void }> = ({ onExit }) => {
                  </div>
              </div>
          ) : (
-             <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8 text-center bg-gray-50">
+             <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8 text-center bg-gray-50 hidden md:flex">
                  <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm border border-gray-200">
                     <Search size={40} className="text-gray-300"/>
                  </div>
